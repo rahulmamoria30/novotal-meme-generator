@@ -34,7 +34,7 @@ const server = http.createServer(app)
 // Allowed CORS origins — comma-separated CLIENT_URL on the host (e.g. Render)
 // lets prod and local dev share one config. Empty origin (curl, same-origin) is allowed.
 const DEFAULT_ORIGINS =
-  "https://novotal-meme-generator.vercel.app"
+  "https://novotal-meme-generator.vercel.app,http://localhost:5173"
 const allowedOrigins = (process.env.CLIENT_URL || DEFAULT_ORIGINS)
   .split(",")
   .map((s) => s.trim())
@@ -113,9 +113,7 @@ app.use((req, res, next) => {
   if (skip) return next()
 
   res.on("finish", () => {
-    const durationMs = Number(
-      (process.hrtime.bigint() - start) / 1000000n
-    )
+    const durationMs = Number((process.hrtime.bigint() - start) / 1000000n)
 
     // Extract sessionId from common places (request body, params, query) without
     // logging the full body — uploads contain large base64 payloads.
