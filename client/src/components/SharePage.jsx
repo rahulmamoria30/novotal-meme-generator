@@ -118,7 +118,7 @@ const SharePage = () => {
     return (
       <div className="share-page loading">
         <div className="spinner"></div>
-        <p>buffering vibes...</p>
+        <p>Loading meme...</p>
       </div>
     )
   }
@@ -126,10 +126,10 @@ const SharePage = () => {
   if (error || !meme) {
     return (
       <div className="share-page error">
-        <h2>💀 rip</h2>
-        <p>{error || "this meme ghosted"}</p>
+        <h2>Not found</h2>
+        <p>{error || "This meme is no longer available."}</p>
         <button onClick={() => navigate("/")} className="btn btn-primary">
-          cook a fresh one
+          Create a new meme
         </button>
       </div>
     )
@@ -160,7 +160,7 @@ const SharePage = () => {
         </div>
 
         <div className="reactions-section">
-          <h3>drop a reaction ↓</h3>
+          <h3>React</h3>
           <div className="reaction-buttons">
             {REACTIONS.map(({ type, emoji, label }) => (
               <button
@@ -178,39 +178,39 @@ const SharePage = () => {
           </div>
 
           <div className="reaction-total">
-            {totalReactions} reaction{totalReactions !== 1 ? "s" : ""} · keep stacking 📈
+            {totalReactions} reaction{totalReactions !== 1 ? "s" : ""}
           </div>
         </div>
 
         <div className="share-section">
-          <h3>spread it ↓</h3>
+          <h3>Share</h3>
           <div className="share-buttons">
             <button onClick={copyShareLink} className="share-btn copy">
-              {showCopied ? "✓ yoinked" : "🔗 copy link"}
+              {showCopied ? "✓ Copied" : "🔗 Copy link"}
             </button>
             <button
               onClick={() => shareToSocial("twitter")}
               className="share-btn twitter"
             >
-              𝕏 the bird app
+              𝕏 Share on X
             </button>
             <button
               onClick={() => shareToSocial("facebook")}
               className="share-btn facebook"
             >
-              f boomer mode
+              f Facebook
             </button>
             <button
               onClick={() => shareToSocial("whatsapp")}
               className="share-btn whatsapp"
             >
-              💬 group chat
+              💬 WhatsApp
             </button>
           </div>
         </div>
 
         <button onClick={() => navigate("/")} className="btn btn-create">
-          ✨ cook your own
+          ✨ Create your own
         </button>
       </div>
     </div>

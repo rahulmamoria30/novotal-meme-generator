@@ -206,10 +206,10 @@ const ImageUpload = () => {
           />
           <div className="webcam-actions">
             <button onClick={capturePhoto} className="webcam-btn capture">
-              <span>📸</span> snap it
+              <span>📸</span> Capture
             </button>
             <button onClick={stopWebcam} className="webcam-btn cancel">
-              close it
+              Close
             </button>
           </div>
         </div>
@@ -226,7 +226,7 @@ const ImageUpload = () => {
         <div className="drag-overlay">
           <div className="drag-content">
             <span className="drag-icon">🫳</span>
-            <p>let it gooo</p>
+            <p>Drop your image here</p>
           </div>
         </div>
       )}
@@ -237,29 +237,23 @@ const ImageUpload = () => {
           // Empty state
           <div className="empty-state">
             <div className="empty-icon">🫠</div>
-            <span className="empty-kicker">drop the pic, claim the bag</span>
-            <h1>cook a meme<span className="empty-dot">.</span></h1>
+            <span className="empty-kicker">Upload an image to get started</span>
+            <h1>Create a meme<span className="empty-dot">.</span></h1>
             <p>
-              upload a pic, type your hot take, and the ai chefs up your{" "}
-              <strong>6 menu options</strong> ready to ratio the timeline.
+              Upload an image, add an optional prompt, and the AI will generate{" "}
+              <strong>6 caption suggestions</strong> for you to choose from.
             </p>
 
             <div className="quick-actions">
               <button onClick={open} className="action-card">
                 <span className="action-icon">📤</span>
-                <span className="action-label">upload</span>
+                <span className="action-label">Upload</span>
               </button>
               <button onClick={startWebcam} className="action-card">
                 <span className="action-icon">🤳</span>
-                <span className="action-label">selfie cam</span>
+                <span className="action-label">Use webcam</span>
               </button>
-              
-            </div>
 
-            <div className="empty-stickers">
-              <span className="sticker sticker-1">no cap</span>
-              <span className="sticker sticker-2">fr fr</span>
-              <span className="sticker sticker-3">bussin</span>
             </div>
           </div>
         ) : (
@@ -321,8 +315,8 @@ const ImageUpload = () => {
               onKeyDown={handleKeyDown}
               placeholder={
                 selectedImage
-                  ? "spill the tea... ai will spice it up ✨"
-                  : "drop a pic first bestie..."
+                  ? "Add an optional prompt for the AI..."
+                  : "Upload an image first..."
               }
               rows={1}
               className="gpt-textarea"
@@ -354,8 +348,8 @@ const ImageUpload = () => {
 
         <p className="input-hint">
           {selectedImage
-            ? "smash enter, let the ai cook"
-            : "drag · drop · paste · ctrl+v · whatever, just feed me"}
+            ? "Press Enter to generate suggestions"
+            : "Drag, drop, or paste (Ctrl+V) an image to begin"}
         </p>
       </div>
 

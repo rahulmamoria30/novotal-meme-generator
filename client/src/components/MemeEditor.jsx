@@ -12,14 +12,14 @@ import { toPng } from "html-to-image"
 import { saveAs } from "file-saver"
 import { useNavigate } from "react-router-dom"
 import useMemeStore from "../store/memeStore"
-import { saveMeme, getTemplates, getSuggestions } from "../utils/api"
+import { saveMeme, getTemplates } from "../utils/api"
 import "./MemeEditor.css"
 
-// Vibe presets — one-click style swaps
+// Style presets — one-click style swaps
 const VIBES = [
   {
     id: "impact",
-    name: "classic",
+    name: "Classic",
     emoji: "💪",
     bg: "var(--c-paper)",
     style: {
@@ -31,7 +31,7 @@ const VIBES = [
   },
   {
     id: "comic",
-    name: "chaos",
+    name: "Comic",
     emoji: "🤡",
     bg: "var(--c-pink)",
     style: {
@@ -43,7 +43,7 @@ const VIBES = [
   },
   {
     id: "neon",
-    name: "cursed",
+    name: "Neon",
     emoji: "👁️",
     bg: "var(--c-purple)",
     style: {
@@ -55,7 +55,7 @@ const VIBES = [
   },
   {
     id: "y2k",
-    name: "y2k",
+    name: "Y2K",
     emoji: "💿",
     bg: "var(--c-cyan)",
     style: {
@@ -67,7 +67,7 @@ const VIBES = [
   },
   {
     id: "minimal",
-    name: "minimal",
+    name: "Minimal",
     emoji: "🧊",
     bg: "var(--c-bg-2)",
     style: {
@@ -79,7 +79,7 @@ const VIBES = [
   },
   {
     id: "ransom",
-    name: "ransom",
+    name: "Ransom",
     emoji: "📰",
     bg: "var(--c-yellow)",
     style: {
@@ -100,12 +100,12 @@ const FONT_OPTIONS = [
 ]
 
 const PRO_TIPS = [
-  "drag the text. you have the rizz.",
-  "shorter caption = more ratio potential",
-  "if it makes YOU laugh, it ate.",
-  "white text + black outline is undefeated",
-  "the contrast between caption and pic is the joke",
-  "no caption is also a vibe",
+  "Drag the text to reposition it.",
+  "Shorter captions usually land better.",
+  "If it makes you laugh, it works.",
+  "White text with a black outline is a safe default.",
+  "Contrast between caption and image makes the joke.",
+  "Sometimes no caption is best.",
 ]
 
 const MemeEditor = () => {
@@ -121,9 +121,7 @@ const MemeEditor = () => {
   const [isSaving, setIsSaving] = useState(false)
   const [templates, setTemplates] = useState([])
   const [showTemplates, setShowTemplates] = useState(false)
-  const [isRemixing, setIsRemixing] = useState(false)
-  const [remixError, setRemixError] = useState(null)
-  const [proTipIndex, setProTipIndex] = useState(() =>
+  const [proTipIndex] = useState(() =>
     Math.floor(Math.random() * PRO_TIPS.length)
   )
 
@@ -143,7 +141,7 @@ const MemeEditor = () => {
 
   const [topText, setTopText] = useState(editorTexts[0]?.text || "")
   const [bottomText, setBottomText] = useState(editorTexts[1]?.text || "")
-  const [fontSize, setFontSize] = useState(28)
+  const [fontSize, setFontSize] = useState(18)
   const [fontFamily, setFontFamily] = useState(
     selectedTemplate?.style?.fontFamily || "Impact"
   )
@@ -203,21 +201,6 @@ const MemeEditor = () => {
     if (editorTexts[0]) setTopText(editorTexts[0].text)
     if (editorTexts[1]) setBottomText(editorTexts[1].text)
   }, [editorTexts])
-
-  // Keyboard shortcuts when no text input is focused
-  useEffect(() => {
-    const handler = (e) => {
-      const tag = (e.target?.tagName || "").toLowerCase()
-      const inField = tag === "input" || tag === "textarea" || tag === "select"
-      if (inField || e.metaKey || e.ctrlKey || e.altKey) return
-      const key = e.key.toLowerCase()
-      if (key === "r") handleRemix()
-      else if (key === "x") handleSurprise()
-      else if (key === "u") handleReset()
-    }
-    window.addEventListener("keydown", handler)
-    return () => window.removeEventListener("keydown", handler)
-  })
 
   // Update transformer
   useEffect(() => {
@@ -319,60 +302,12 @@ const MemeEditor = () => {
     navigate("/templates")
   }
 
-  // Apply a one-click vibe preset (font + colors + outline width)
+  // Apply a one-click style preset — keep text color white by default;
+  // the user can override via the color picker if they want.
   const applyVibe = (vibe) => {
     setFontFamily(vibe.style.fontFamily)
-    setTextColor(vibe.style.textColor)
     setStrokeColor(vibe.style.strokeColor)
     setStrokeWidth(vibe.style.strokeWidth)
-  }
-
-  // Reset caption text back to whatever the AI originally suggested
-  const handleReset = () => {
-    setTopText(editorTexts[0]?.text || "")
-    setBottomText(editorTexts[1]?.text || "")
-  }
-
-  // Surprise me: random template + random font + random vibe + random font size
-  const handleSurprise = () => {
-    if (templates.length > 0) {
-      const t = templates[Math.floor(Math.random() * templates.length)]
-      changeTemplate(t)
-    }
-    const v = VIBES[Math.floor(Math.random() * VIBES.length)]
-    applyVibe(v)
-    setFontSize(20 + Math.floor(Math.random() * 30))
-    setProTipIndex((i) => (i + 1) % PRO_TIPS.length)
-  }
-
-  // Re-roll the AI for fresh captions on the same image
-  const handleRemix = async () => {
-    if (!uploadedImage || isRemixing) return
-    setIsRemixing(true)
-    setRemixError(null)
-    try {
-      const { suggestions } = await getSuggestions(
-        null,
-        uploadedImage,
-        "image/png",
-        "",
-        sessionId
-      )
-      if (!Array.isArray(suggestions) || suggestions.length === 0) {
-        throw new Error("AI returned nothing")
-      }
-      // Prefer a suggestion that uses the current template, else first.
-      const match =
-        suggestions.find((s) => s.templateId === selectedTemplate?.id) ||
-        suggestions[0]
-      setTopText(match.topText || "")
-      setBottomText(match.bottomText || "")
-    } catch (err) {
-      console.error("Remix failed:", err)
-      setRemixError(err.message || "remix flopped")
-    } finally {
-      setIsRemixing(false)
-    }
   }
 
   const handleTemplateChange = (template) => {
@@ -387,41 +322,28 @@ const MemeEditor = () => {
     <div className="editor-container">
       <div className="editor-header">
         <button onClick={handleBackToTemplates} className="btn btn-back">
-          ← back to menu
+          ← Back to suggestions
         </button>
         <div className="editor-title-block">
-          <span className="editor-kicker">main character mode</span>
-          <h2>cook it your way</h2>
+          <span className="editor-kicker">Editor</span>
+          <h2>Edit your meme</h2>
         </div>
-        <div className="editor-quick-row">
-          <button
-            onClick={handleRemix}
-            className="quick-chip chip-remix"
-            disabled={isRemixing}
-            title="get new AI captions (R)"
-          >
-            {isRemixing ? "🌀 cooking..." : "🌀 remix"}
+        <div className="editor-header-actions">
+          <button onClick={handleDownload} className="btn btn-download">
+            📥 Download
+          </button>
+          <button onClick={handleCopyToClipboard} className="btn btn-copy">
+            📋 Copy
           </button>
           <button
-            onClick={handleSurprise}
-            className="quick-chip chip-surprise"
-            title="random vibe (X)"
+            onClick={handleShare}
+            className="btn btn-share"
+            disabled={isSaving}
           >
-            🎲 surprise
-          </button>
-          <button
-            onClick={handleReset}
-            className="quick-chip chip-reset"
-            title="undo to AI original (U)"
-          >
-            ↺ reset
+            {isSaving ? "Saving..." : "🚀 Share"}
           </button>
         </div>
       </div>
-
-      {remixError && (
-        <div className="editor-flash">remix flopped: {remixError}</div>
-      )}
 
       <div className="editor-layout">
         {/* Canvas */}
@@ -534,31 +456,31 @@ const MemeEditor = () => {
           <section className="control-section">
             <div className="section-head">
               <span className="section-tag">01</span>
-              <span className="section-title">caption</span>
+              <span className="section-title">Caption</span>
             </div>
 
             <div className="control-group">
               <div className="label-row">
-                <label>top text 🔝</label>
+                <label>Top text</label>
                 <span className="char-chip">{topText.length} chars</span>
               </div>
               <textarea
                 value={topText}
                 onChange={(e) => setTopText(e.target.value)}
-                placeholder="spill it..."
+                placeholder="Enter top caption..."
                 rows={2}
               />
             </div>
 
             <div className="control-group">
               <div className="label-row">
-                <label>bottom text 👇</label>
+                <label>Bottom text</label>
                 <span className="char-chip">{bottomText.length} chars</span>
               </div>
               <textarea
                 value={bottomText}
                 onChange={(e) => setBottomText(e.target.value)}
-                placeholder="...and the kicker"
+                placeholder="Enter bottom caption..."
                 rows={2}
               />
             </div>
@@ -568,7 +490,7 @@ const MemeEditor = () => {
           <section className="control-section">
             <div className="section-head">
               <span className="section-tag">02</span>
-              <span className="section-title">vibe presets</span>
+              <span className="section-title">Style presets</span>
             </div>
             <div className="vibe-grid">
               {VIBES.map((v) => (
@@ -590,11 +512,11 @@ const MemeEditor = () => {
           <section className="control-section">
             <div className="section-head">
               <span className="section-tag">03</span>
-              <span className="section-title">style tweaks</span>
+              <span className="section-title">Style</span>
             </div>
 
             <div className="control-group">
-              <label>size · {fontSize}px</label>
+              <label>Size · {fontSize}px</label>
               <input
                 type="range"
                 min="14"
@@ -605,7 +527,7 @@ const MemeEditor = () => {
             </div>
 
             <div className="control-group">
-              <label>font</label>
+              <label>Font</label>
               <select
                 value={fontFamily}
                 onChange={(e) => setFontFamily(e.target.value)}
@@ -620,7 +542,7 @@ const MemeEditor = () => {
 
             <div className="control-row colors">
               <div className="control-group">
-                <label>text</label>
+                <label>Text</label>
                 <input
                   type="color"
                   value={textColor}
@@ -628,7 +550,7 @@ const MemeEditor = () => {
                 />
               </div>
               <div className="control-group">
-                <label>outline</label>
+                <label>Outline</label>
                 <input
                   type="color"
                   value={strokeColor}
@@ -638,7 +560,7 @@ const MemeEditor = () => {
             </div>
 
             <div className="control-group">
-              <label>outline thiccness · {strokeWidth}px</label>
+              <label>Outline width · {strokeWidth}px</label>
               <input
                 type="range"
                 min="0"
@@ -653,13 +575,13 @@ const MemeEditor = () => {
           <section className="control-section">
             <div className="section-head">
               <span className="section-tag">04</span>
-              <span className="section-title">template</span>
+              <span className="section-title">Template</span>
             </div>
             <button
               className="btn btn-template"
               onClick={() => setShowTemplates(!showTemplates)}
             >
-              🎨 {showTemplates ? "hide templates" : "swap template"}
+              🎨 {showTemplates ? "Hide templates" : "Change template"}
             </button>
             {showTemplates && (
               <div className="template-picker">
@@ -680,33 +602,10 @@ const MemeEditor = () => {
 
           {/* === PRO TIP === */}
           <div className="pro-tip">
-            <span className="pro-tip-label">💡 pro tip</span>
+            <span className="pro-tip-label">💡 Tip</span>
             <span className="pro-tip-text">{PRO_TIPS[proTipIndex]}</span>
           </div>
 
-          {/* === KEYBOARD HINTS === */}
-          <div className="kb-hints">
-            <span><kbd>R</kbd> remix</span>
-            <span><kbd>X</kbd> surprise</span>
-            <span><kbd>U</kbd> reset</span>
-          </div>
-
-          {/* === ACTIONS (sticky) === */}
-          <div className="action-buttons">
-            <button onClick={handleDownload} className="btn btn-download">
-              📥 save the W
-            </button>
-            <button onClick={handleCopyToClipboard} className="btn btn-copy">
-              📋 yoink
-            </button>
-            <button
-              onClick={handleShare}
-              className="btn btn-share"
-              disabled={isSaving}
-            >
-              {isSaving ? "cooking..." : "🚀 post it"}
-            </button>
-          </div>
         </div>
       </div>
     </div>

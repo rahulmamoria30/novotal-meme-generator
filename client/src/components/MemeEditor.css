@@ -419,14 +419,17 @@
   box-shadow: 1.5px 1.5px 0 var(--c-ink);
 }
 
-/* ===== ACTIONS (sticky at bottom of panel) ===== */
-.action-buttons {
+/* ===== HEADER ACTIONS (top-right) ===== */
+.editor-header-actions {
   display: flex;
-  flex-direction: column;
   gap: 0.5rem;
-  padding-top: 0.75rem;
-  border-top: 2px dashed var(--c-ink);
-  margin-top: auto;
+  justify-self: end;
+  flex-wrap: wrap;
+}
+
+.editor-header-actions .btn {
+  padding: 0.5rem 0.875rem;
+  font-size: 0.875rem;
 }
 
 .btn-download {
@@ -440,10 +443,7 @@
 .btn-share {
   background: var(--c-pink);
   color: var(--c-paper);
-  font-size: 1.0625rem;
-  padding: 0.875rem;
   font-weight: 800;
-  text-transform: lowercase;
   letter-spacing: 0.02em;
 }
 
@@ -468,9 +468,10 @@
   .editor-header {
     grid-template-columns: auto 1fr;
   }
-  .editor-quick-row {
+  .editor-header-actions {
     grid-column: 1 / -1;
-    justify-content: center;
+    justify-self: stretch;
+    justify-content: flex-end;
   }
 }
 
@@ -493,17 +494,8 @@
   .vibe-grid {
     grid-template-columns: repeat(3, 1fr);
   }
-  .action-buttons {
-    flex-direction: row;
-    flex-wrap: wrap;
-  }
-  .action-buttons .btn {
-    flex: 1;
-    min-width: 100px;
-    padding: 0.625rem;
-    font-size: 0.875rem;
-  }
-  .btn-share {
-    flex-basis: 100%;
+  .editor-header-actions .btn {
+    padding: 0.45rem 0.75rem;
+    font-size: 0.8125rem;
   }
 }

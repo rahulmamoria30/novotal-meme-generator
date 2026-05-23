@@ -58,7 +58,7 @@ const MemePreview = ({
     // Scale font with width — kept intentionally small so captions don't
     // dominate the image on either previews or the edit canvas.
     const scaledFontSize = (position?.fontSize || 48) * (dimensions.width / 560)
-    const floor = dimensions.width < 220 ? 13 : 15
+    const floor = dimensions.width < 220 ? 14 : 18
     let fontSize = Math.max(scaledFontSize, floor)
 
     // Each text block can use up to 35% of the canvas height — leaves more
@@ -79,7 +79,7 @@ const MemePreview = ({
     if (blockHeight > maxBlockHeight) {
       // Shrink font until block fits, with a hard floor so it stays legible
       const scale = maxBlockHeight / blockHeight
-      fontSize = Math.max(11, fontSize * scale)
+      fontSize = Math.max(14, fontSize * scale)
       lines = estimateLines(fontSize)
       blockHeight = Math.min(
         maxBlockHeight,
@@ -98,7 +98,7 @@ const MemePreview = ({
           y={y}
           width={dimensions.width - padding}
           height={blockHeight}
-          fill="rgba(0, 0, 0, 0.72)"
+          fill="rgba(0, 0, 0, 0.85)"
           cornerRadius={8}
         />
         <Text
@@ -109,13 +109,14 @@ const MemePreview = ({
           height={blockHeight}
           fontSize={fontSize}
           fontFamily={style.fontFamily || "Impact"}
+          fontStyle="bold"
           fill="#ffffff"
           stroke="#000000"
-          strokeWidth={Math.max(1, fontSize * 0.04)}
+          strokeWidth={Math.max(1.5, fontSize * 0.06)}
           align="center"
           verticalAlign="middle"
           shadowColor="#000000"
-          shadowBlur={4}
+          shadowBlur={6}
           shadowOffsetX={1}
           shadowOffsetY={1}
           wrap="word"

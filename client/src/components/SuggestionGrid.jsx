@@ -31,8 +31,8 @@ const SuggestionGrid = () => {
           <div className="ai-brain">🧠</div>
           <div className="ai-sparkles">✨</div>
         </div>
-        <h2>cooking it up...</h2>
-        <p>ai is in the kitchen, plating 6 hot takes</p>
+        <h2>Generating suggestions...</h2>
+        <p>The AI is creating 6 caption options for your image.</p>
       </div>
     )
   }
@@ -40,9 +40,9 @@ const SuggestionGrid = () => {
   if (!suggestions || suggestions.length === 0) {
     return (
       <div className="no-suggestions">
-        <p>kitchen's closed bestie 🫥 try another pic?</p>
+        <p>No suggestions available. Try another image.</p>
         <button onClick={handleBack} className="btn btn-retry">
-          start over
+          Start over
         </button>
       </div>
     )
@@ -51,11 +51,11 @@ const SuggestionGrid = () => {
   return (
     <div className="suggestion-container">
       <div className="suggestion-header">
-        <span className="suggestion-kicker">pick your fighter</span>
-        <h2>the menu 🍽️</h2>
-        <p>ai served 6 takes. pick the one that ate the most.</p>
+        <span className="suggestion-kicker">Choose a suggestion</span>
+        <h2>AI suggestions</h2>
+        <p>6 AI-generated captions. Pick the one you like best.</p>
         <button onClick={handleBack} className="btn btn-back">
-          ← yuck, new pic
+          ← Upload a different image
         </button>
       </div>
 

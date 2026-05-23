@@ -129,8 +129,8 @@
 
 .suggestion-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 1.25rem;
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  gap: 1.75rem;
 }
 
 .suggestion-card {
@@ -181,7 +181,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 200px;
+  min-height: 320px;
   padding: 0;
   border-bottom: var(--border);
 }
@@ -191,18 +191,18 @@
 }
 
 .suggestion-info {
-  padding: 0.5rem 0.75rem;
+  padding: 0.75rem 1rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.5rem;
   background: var(--c-paper);
 }
 
 .template-name {
   font-weight: 700;
   color: var(--c-ink);
-  font-size: 0.8125rem;
+  font-size: 0.9375rem;
   text-transform: lowercase;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -213,10 +213,10 @@
 .humor-badge {
   background: var(--c-lime);
   color: var(--c-ink);
-  padding: 0.15rem 0.5rem;
+  padding: 0.2rem 0.625rem;
   border: 2px solid var(--c-ink);
   border-radius: 999px;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 700;
   text-transform: lowercase;
   box-shadow: 2px 2px 0 var(--c-ink);

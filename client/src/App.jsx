@@ -51,7 +51,7 @@ function App() {
               </div>
               <div className="logo-text-group">
                 <span className="logo-text">MemeCook</span>
-                <span className="logo-tagline">let the ai cook fr</span>
+                <span className="logo-tagline">AI-powered meme generator</span>
               </div>
             </a>
 
@@ -77,7 +77,7 @@ function App() {
               </NavLink>
               <div className="nav-badge">
                 <span className="badge-dot"></span>
-                claude cooking
+                Powered by Claude
               </div>
             </nav>
           </div>
@@ -96,7 +96,7 @@ function App() {
         </main>
 
         <footer className="app-footer">
-          <p>cooked up at novotal hackathon 2026 · no cap 🔥</p>
+          <p>Built at Novotal Hackathon 2026</p>
         </footer>
       </div>
     </Router>

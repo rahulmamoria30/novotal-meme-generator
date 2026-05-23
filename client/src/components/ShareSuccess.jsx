@@ -100,9 +100,9 @@ const ShareSuccess = () => {
 
       <div className="success-header">
         <div className="success-icon">🎉</div>
-        <span className="success-kicker">it's giving... main character</span>
-        <h2>you ate that fr</h2>
-        <p>now post it everywhere and watch the reactions stack up</p>
+        <span className="success-kicker">Shared</span>
+        <h2>Your meme is live</h2>
+        <p>Share the link below and track reactions in real time.</p>
       </div>
 
       <div className="meme-preview-card">
@@ -110,7 +110,7 @@ const ShareSuccess = () => {
       </div>
 
       <div className="live-reactions">
-        <h3>live reactions ↓</h3>
+        <h3>Live reactions</h3>
         <div className="reaction-display">
           {REACTIONS.map(({ type, emoji }) => (
             <div key={type} className="reaction-item">
@@ -119,7 +119,7 @@ const ShareSuccess = () => {
             </div>
           ))}
         </div>
-        <p className="total-count">{totalReactions} total · keep cookin</p>
+        <p className="total-count">{totalReactions} total reactions</p>
       </div>
 
       <div className="share-actions">
@@ -131,7 +131,7 @@ const ShareSuccess = () => {
             className="share-link-input"
           />
           <button onClick={copyLink} className="btn btn-copy">
-            {copied ? "✓ yoinked" : "📋 copy link"}
+            {copied ? "✓ Copied" : "📋 Copy link"}
           </button>
         </div>
 
@@ -140,19 +140,19 @@ const ShareSuccess = () => {
             onClick={() => shareToSocial("twitter")}
             className="btn btn-twitter"
           >
-            𝕏 ratio someone
+            𝕏 Share on X
           </button>
           <button
             onClick={() => shareToSocial("whatsapp")}
             className="btn btn-whatsapp"
           >
-            💬 group chat
+            💬 WhatsApp
           </button>
           <button
             onClick={() => shareToSocial("facebook")}
             className="btn btn-facebook"
           >
-            f boomer mode
+            f Facebook
           </button>
         </div>
       </div>
@@ -162,10 +162,10 @@ const ShareSuccess = () => {
           onClick={() => navigate(`/meme/${savedMeme.id}`)}
           className="btn btn-view"
         >
-          👁️ peek the public page
+          👁️ View public page
         </button>
         <button onClick={handleCreateAnother} className="btn btn-new">
-          ✨ cook another
+          ✨ Create another
         </button>
       </div>
     </div>
