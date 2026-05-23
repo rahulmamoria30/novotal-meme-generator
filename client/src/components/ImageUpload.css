@@ -488,35 +488,165 @@
   color: var(--c-ink);
 }
 
-/* Mobile */
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .gpt-container {
+    min-height: calc(100vh - 160px);
+  }
+  .empty-icon {
+    font-size: 4rem;
+  }
+  .empty-state > p {
+    font-size: 1rem;
+  }
+  .drag-content {
+    padding: 2rem 2.25rem;
+  }
+  .drag-icon {
+    font-size: 2.75rem;
+  }
+  .drag-content p {
+    font-size: 1.0625rem;
+  }
+}
+
 @media (max-width: 640px) {
   .gpt-container {
     padding: 0 0.5rem;
+    min-height: calc(100vh - 140px);
+  }
+  .empty-icon {
+    font-size: 3.5rem;
   }
   .empty-state h1 {
     font-size: 2.25rem;
   }
   .empty-state > p {
     font-size: 0.9375rem;
+    margin-bottom: 1.5rem;
+  }
+  .empty-kicker {
+    font-size: 1.0625rem;
   }
   .quick-actions {
     gap: 0.625rem;
   }
   .action-card {
     padding: 1rem 1.25rem;
-    min-width: 100px;
+    min-width: 110px;
+    flex: 1;
+    max-width: 180px;
+  }
+  .action-icon {
+    font-size: 1.625rem;
+  }
+  .action-label {
+    font-size: 0.8125rem;
+  }
+  .empty-stickers {
+    margin-top: 1.5rem;
+    gap: 0.5rem;
+  }
+  .sticker {
+    font-size: 1.125rem;
+    padding: 0.2rem 0.75rem;
+  }
+  .image-card {
+    max-width: 100%;
+  }
+  .gpt-input-container {
+    padding: 0.625rem;
+  }
+  .input-btn, .send-btn {
+    width: 38px;
+    height: 38px;
+  }
+  .input-hint {
+    font-size: 0.9375rem;
+  }
+  .webcam-content {
+    padding: 1rem;
+  }
+  .webcam-actions {
+    gap: 0.625rem;
+  }
+  .webcam-btn {
+    padding: 0.625rem 1rem;
+    font-size: 0.9375rem;
+    flex: 1;
+  }
+}
+
+@media (max-width: 480px) {
+  .empty-state h1 {
+    font-size: 2rem;
+  }
+  .empty-icon {
+    font-size: 3rem;
+  }
+  .empty-kicker {
+    font-size: 0.95rem;
+    padding: 0.1rem 0.625rem;
+  }
+  .quick-actions {
+    width: 100%;
+  }
+  .action-card {
+    padding: 0.875rem 1rem;
+    min-width: 0;
+    max-width: none;
   }
   .action-icon {
     font-size: 1.5rem;
   }
   .action-label {
-    font-size: 0.8125rem;
+    font-size: 0.75rem;
   }
-  .image-card {
-    max-width: 100%;
+  .drag-content {
+    padding: 1.5rem 1.75rem;
+    transform: rotate(-2deg);
   }
-  .input-btn, .send-btn {
-    width: 38px;
-    height: 38px;
+  .drag-content p {
+    font-size: 0.9375rem;
+  }
+  .gpt-input-container {
+    padding: 0.5rem;
+  }
+  .gpt-textarea {
+    font-size: 0.9375rem;
+  }
+  .input-hint {
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
+  }
+  .attached-preview img {
+    width: 36px;
+    height: 36px;
+  }
+  .error-toast {
+    bottom: 90px;
+    left: 0.75rem;
+    right: 0.75rem;
+    transform: none;
+    text-align: center;
+    padding: 0.625rem 0.875rem;
+    font-size: 0.875rem;
+  }
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  .webcam-modal {
+    padding: 0.5rem;
+  }
+  .webcam-content {
+    padding: 0.875rem;
+    border-radius: 14px;
   }
 }

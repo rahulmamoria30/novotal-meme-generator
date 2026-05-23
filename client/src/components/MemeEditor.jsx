@@ -175,8 +175,11 @@ const MemeEditor = () => {
     if (!containerRef.current) return
 
     const updateDimensions = () => {
+      const cs = window.getComputedStyle(containerRef.current)
+      const innerPad =
+        parseFloat(cs.paddingLeft || 0) + parseFloat(cs.paddingRight || 0)
       const containerWidth = Math.min(
-        containerRef.current.offsetWidth - 40,
+        containerRef.current.offsetWidth - innerPad,
         600
       )
 
@@ -340,7 +343,7 @@ const MemeEditor = () => {
             className="btn btn-share"
             disabled={isSaving}
           >
-            {isSaving ? "Saving..." : "🚀 Share"}
+            {isSaving ? "Sharing..." : "🚀 Share"}
           </button>
         </div>
       </div>

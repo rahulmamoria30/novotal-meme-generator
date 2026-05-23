@@ -176,6 +176,28 @@
   }
 }
 
+@media (max-width: 1024px) {
+  .wall-grid {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1.25rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .wall-container {
+    padding: 1.25rem 0.875rem;
+  }
+  .wall-header {
+    margin-bottom: 1.5rem;
+  }
+  .wall-image-wrap {
+    min-height: 200px;
+  }
+  .wall-image-wrap img {
+    max-height: 320px;
+  }
+}
+
 @media (max-width: 640px) {
   .wall-container {
     padding: 1rem 0.5rem;
@@ -183,8 +205,49 @@
   .wall-header h2 {
     font-size: 1.75rem;
   }
+  .wall-kicker {
+    font-size: 1.0625rem;
+  }
+  .wall-header p {
+    font-size: 0.9375rem;
+  }
   .wall-grid {
     grid-template-columns: 1fr;
     gap: 1rem;
+  }
+  .wall-card:nth-child(n) { transform: rotate(0deg); }
+  .wall-image-wrap {
+    min-height: 180px;
+  }
+  .wall-state {
+    min-height: 50vh;
+    padding: 1.5rem 1rem;
+  }
+  .wall-state h2 {
+    font-size: 1.625rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .wall-container {
+    padding: 0.875rem 0.5rem;
+  }
+  .wall-header h2 {
+    font-size: 1.5rem;
+  }
+  .wall-meta {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8125rem;
+  }
+  .wall-reactions {
+    font-size: 0.75rem;
+    padding: 0.1rem 0.5rem;
+  }
+  .wall-date {
+    font-size: 0.9375rem;
+  }
+  .wall-link-btn {
+    padding: 0.625rem 1rem;
+    font-size: 0.875rem;
   }
 }

@@ -223,6 +223,18 @@
   }
 }
 
+@media (max-width: 768px) {
+  .share-success {
+    padding: 1rem 0.875rem 1.5rem;
+  }
+  .live-reactions {
+    padding: 1rem;
+  }
+  .reaction-display {
+    gap: 0.5rem;
+  }
+}
+
 @media (max-width: 640px) {
   .share-success {
     padding: 1rem 0.75rem 1.5rem;
@@ -233,13 +245,67 @@
   .success-icon {
     font-size: 3.25rem;
   }
+  .success-kicker {
+    font-size: 1.0625rem;
+  }
+  .social-buttons {
+    gap: 0.5rem;
+  }
   .social-buttons .btn {
-    min-width: 100%;
+    min-width: calc(50% - 0.25rem);
+    padding: 0.55rem 0.625rem;
+    font-size: 0.8125rem;
   }
   .share-link-box {
     flex-direction: column;
   }
+  .share-link-input {
+    font-size: 0.8125rem;
+  }
   .btn-copy {
     width: 100%;
+  }
+  .reaction-item {
+    min-width: 48px;
+    padding: 0.4rem 0.5rem;
+  }
+  .reaction-item .emoji {
+    font-size: 1.5rem;
+  }
+  .floating-reaction {
+    font-size: 4.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .share-success {
+    padding: 0.875rem 0.5rem 1.25rem;
+  }
+  .success-header {
+    margin-bottom: 1.25rem;
+  }
+  .success-header h2 {
+    font-size: 1.75rem;
+  }
+  .success-icon {
+    font-size: 2.75rem;
+  }
+  .meme-preview-card {
+    padding: 0.5rem;
+    margin-bottom: 1.25rem;
+    transform: rotate(-0.5deg);
+  }
+  .live-reactions {
+    padding: 0.875rem;
+  }
+  .live-reactions h3 {
+    font-size: 1rem;
+  }
+  .social-buttons .btn {
+    min-width: 100%;
+  }
+  .btn-new {
+    font-size: 1rem;
+    padding: 0.75rem;
   }
 }

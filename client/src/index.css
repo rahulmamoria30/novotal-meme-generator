@@ -41,6 +41,7 @@ body,
   min-height: 100vh;
   margin: 0;
   padding: 0;
+  overflow-x: hidden;
 }
 
 body {
@@ -49,6 +50,17 @@ body {
   background-image: radial-gradient(var(--c-ink) 1px, transparent 1px);
   background-size: 22px 22px;
   background-position: 0 0;
+  width: 100%;
+}
+
+@media (max-width: 480px) {
+  body {
+    background-size: 18px 18px;
+  }
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
 }
 
 a {

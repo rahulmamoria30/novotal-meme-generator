@@ -2,6 +2,7 @@
   padding: 1rem;
   max-width: 1280px;
   margin: 0 auto;
+  width: 100%;
 }
 
 /* ===== HEADER ===== */
@@ -108,6 +109,12 @@
   align-items: center;
   min-height: 480px;
   box-shadow: var(--shadow-lg);
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.canvas-container .konvajs-content {
+  max-width: 100%;
 }
 
 .canvas-container::before {
@@ -140,6 +147,8 @@
   overflow-y: auto;
   position: sticky;
   top: 5rem;
+  max-width: 100%;
+  min-width: 0;
 }
 
 /* ===== SECTIONS ===== */
@@ -448,6 +457,13 @@
 }
 
 /* ===== RESPONSIVE ===== */
+@media (max-width: 1180px) {
+  .editor-layout {
+    grid-template-columns: minmax(0, 1fr) 320px;
+    gap: 1.25rem;
+  }
+}
+
 @media (max-width: 1024px) {
   .editor-layout {
     grid-template-columns: 1fr;
@@ -455,23 +471,38 @@
   .controls-panel {
     position: static;
     max-height: none;
+    order: 2;
   }
   .canvas-container {
     order: 1;
   }
-  .controls-panel {
-    order: 2;
-  }
 }
 
 @media (max-width: 768px) {
+  .editor-container {
+    padding: 0.75rem;
+  }
   .editor-header {
     grid-template-columns: auto 1fr;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+  }
+  .editor-header h2 {
+    font-size: 1.625rem;
   }
   .editor-header-actions {
     grid-column: 1 / -1;
     justify-self: stretch;
     justify-content: flex-end;
+  }
+  .canvas-container {
+    min-height: 420px;
+  }
+  /* iOS auto-zooms inputs <16px on focus — keep form controls at 16px on touch widths */
+  .control-group textarea,
+  .control-group input[type="text"],
+  .control-group select {
+    font-size: 1rem;
   }
 }
 
@@ -479,23 +510,132 @@
   .editor-container {
     padding: 0.5rem;
   }
+  .editor-header {
+    grid-template-columns: 1fr;
+    gap: 0.625rem;
+  }
+  .editor-header .btn-back {
+    justify-self: start;
+  }
+  .editor-title-block {
+    align-items: flex-start;
+  }
   .editor-header h2 {
     font-size: 1.5rem;
+  }
+  .editor-kicker {
+    font-size: 1rem;
+    padding: 0.05rem 0.625rem;
+  }
+  .editor-header-actions {
+    width: 100%;
+    justify-content: space-between;
+    gap: 0.4rem;
+  }
+  .editor-header-actions .btn {
+    padding: 0.5rem 0.625rem;
+    font-size: 0.8125rem;
+    flex: 1;
+    min-width: 0;
   }
   .canvas-container {
     padding: 0.625rem;
     border-radius: 14px;
-    min-height: 360px;
+    min-height: 320px;
+  }
+  .canvas-container::before {
+    font-size: 0.9375rem;
+    top: -12px;
+    left: 16px;
   }
   .controls-panel {
     padding: 0.875rem;
     border-radius: 14px;
+    gap: 0.875rem;
   }
   .vibe-grid {
     grid-template-columns: repeat(3, 1fr);
+    gap: 0.4rem;
+  }
+  .vibe-chip {
+    padding: 0.5rem 0.3rem;
+  }
+  .vibe-emoji {
+    font-size: 1.25rem;
+  }
+  .vibe-name {
+    font-size: 0.625rem;
+  }
+  .control-section {
+    padding: 0.75rem;
+  }
+  .section-title {
+    font-size: 0.875rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .editor-container {
+    padding: 0.5rem;
+  }
+  .editor-header h2 {
+    font-size: 1.375rem;
+  }
+  .editor-header-actions {
+    gap: 0.35rem;
   }
   .editor-header-actions .btn {
-    padding: 0.45rem 0.75rem;
+    padding: 0.5rem 0.4rem;
+    font-size: 0.75rem;
+  }
+  .control-row.colors {
+    gap: 0.5rem;
+  }
+  .control-group input[type="color"] {
+    height: 40px;
+  }
+  .canvas-container {
+    padding: 0.5rem;
+    min-height: 280px;
+  }
+  /* shorten pseudo-label so it fits */
+  .canvas-container::before {
+    content: "drag to move";
+    font-size: 0.875rem;
+    left: 12px;
+    padding: 0.05rem 0.5rem;
+  }
+  .control-group textarea,
+  .control-group input[type="text"],
+  .control-group select {
+    font-size: 1rem;
+    padding: 0.5rem 0.625rem;
+  }
+  .pro-tip {
+    padding: 0.5rem 0.75rem;
+  }
+  .pro-tip-text {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .editor-header-actions {
+    gap: 0.3rem;
+  }
+  .editor-header-actions .btn {
+    font-size: 0.6875rem;
+    padding: 0.45rem 0.3rem;
+    letter-spacing: -0.02em;
+  }
+  .editor-header-actions .btn-share {
+    flex: 1.4;
+  }
+  .vibe-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .canvas-container::before {
+    content: "drag text";
     font-size: 0.8125rem;
   }
 }

@@ -230,9 +230,38 @@
   margin-top: 1rem;
 }
 
+@media (max-width: 1024px) {
+  .suggestion-grid {
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1.25rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .suggestion-container {
+    padding: 0.875rem;
+  }
+  .suggestion-header {
+    margin-bottom: 1.75rem;
+  }
+  .suggestion-loading h2 {
+    font-size: 1.75rem;
+  }
+  .ai-loader {
+    width: 92px;
+    height: 92px;
+  }
+  .ai-brain {
+    font-size: 3.25rem;
+  }
+  .preview-wrapper {
+    min-height: 220px;
+  }
+}
+
 @media (max-width: 640px) {
   .suggestion-container {
-    padding: 0.75rem;
+    padding: 0.75rem 0.5rem;
   }
   .suggestion-header h2 {
     font-size: 2rem;
@@ -240,5 +269,38 @@
   .suggestion-grid {
     grid-template-columns: 1fr;
     gap: 1.25rem;
+  }
+  .suggestion-card:nth-child(n) { transform: rotate(0deg); }
+  .preview-wrapper {
+    min-height: 200px;
+  }
+}
+
+@media (max-width: 480px) {
+  .suggestion-loading {
+    min-height: 50vh;
+    padding: 1.5rem 1rem;
+  }
+  .suggestion-loading h2 {
+    font-size: 1.5rem;
+  }
+  .suggestion-loading p {
+    font-size: 1.0625rem;
+  }
+  .suggestion-header p {
+    font-size: 0.9375rem;
+  }
+  .no-suggestions {
+    padding: 2.5rem 1rem;
+  }
+  .suggestion-info {
+    padding: 0.625rem 0.75rem;
+  }
+  .template-name {
+    font-size: 0.875rem;
+  }
+  .humor-badge {
+    font-size: 0.6875rem;
+    padding: 0.15rem 0.5rem;
   }
 }
