@@ -21,7 +21,12 @@ const ShareSuccess = () => {
   const [reactions, setReactions] = useState({})
   const [newReaction, setNewReaction] = useState(null)
 
-  const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000"
+  const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8000"
+
+  const handleCreateAnother = () => {
+    resetToUpload()
+    navigate("/")
+  }
   const fullShareUrl = `${window.location.origin}/meme/${savedMeme?.id}`
   const imageUrl = savedMeme?.imageUrl?.startsWith("http")
     ? savedMeme.imageUrl
@@ -77,7 +82,7 @@ const ShareSuccess = () => {
     return (
       <div className="share-success">
         <p>No meme to share. Create one first!</p>
-        <button onClick={resetToUpload} className="btn btn-primary">
+        <button onClick={handleCreateAnother} className="btn btn-primary">
           Create Meme
         </button>
       </div>
@@ -158,7 +163,7 @@ const ShareSuccess = () => {
         >
           👁️ View Public Page
         </button>
-        <button onClick={resetToUpload} className="btn btn-new">
+        <button onClick={handleCreateAnother} className="btn btn-new">
           ✨ Create Another Meme
         </button>
       </div>

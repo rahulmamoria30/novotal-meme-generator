@@ -4,6 +4,7 @@ import {
   Layer,
   Image as KonvaImage,
   Text,
+  Rect,
   Transformer,
 } from "react-konva"
 import useImage from "use-image"
@@ -188,12 +189,18 @@ const MemeEditor = () => {
       })
 
       setSavedMeme(result.meme, result.shareUrl)
+      navigate("/share")
     } catch (err) {
       console.error("Failed to save meme:", err)
       alert("Failed to share meme")
     } finally {
       setIsSaving(false)
     }
+  }
+
+  const handleStartOver = () => {
+    resetToUpload()
+    navigate("/")
   }
 
   const handleTemplateChange = (template) => {
@@ -207,7 +214,7 @@ const MemeEditor = () => {
   return (
     <div className="editor-container">
       <div className="editor-header">
-        <button onClick={resetToUpload} className="btn btn-back">
+        <button onClick={handleStartOver} className="btn btn-back">
           ← Start Over
         </button>
         <h2>Edit Your Meme</h2>

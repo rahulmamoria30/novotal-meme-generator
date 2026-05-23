@@ -1,0 +1,29 @@
+{
+  "memes": {
+    "chWtiGHTBG": {
+      "id": "chWtiGHTBG",
+      "imageUrl": "/uploads/meme-chWtiGHTBG.png",
+      "templateId": "drake-style",
+      "texts": {
+        "topText": "Create some cute memes, they said",
+        "bottomText": "Sir, I AM the cute meme"
+      },
+      "creatorSessionId": "s9s1FF58PgxmyrD3TDmcv",
+      "createdAt": "2026-05-23T07:19:39.173Z",
+      "reactions": {}
+    },
+    "zirKIGCv4g": {
+      "id": "zirKIGCv4g",
+      "imageUrl": "/uploads/meme-zirKIGCv4g.png",
+      "templateId": "classic-top-bottom",
+      "texts": {
+        "topText": "POV: You said 'wanna go for a—'",
+        "bottomText": "—and forgot to finish the sentence. He's been like this for 4 hours."
+      },
+      "creatorSessionId": "s9s1FF58PgxmyrD3TDmcv",
+      "createdAt": "2026-05-23T07:23:41.370Z",
+      "reactions": {}
+    }
+  },
+  "reactions": {}
+}

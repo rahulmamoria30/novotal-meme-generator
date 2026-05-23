@@ -135,7 +135,7 @@ const SharePage = () => {
     )
   }
 
-  const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000"
+  const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8000"
   const imageUrl = meme.imageUrl?.startsWith("http")
     ? meme.imageUrl
     : `${API_BASE}${meme.imageUrl}`
