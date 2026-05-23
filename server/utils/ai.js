@@ -103,6 +103,7 @@ Respond with JSON:
   "suggestions": [
     {
       "templateId": "template-id-here",
+      "name": "A short, catchy label for this meme (e.g. 'POV: Monday morning', 'When the code finally works') — 2-5 words, no quotes",
       "topText": "Top caption text",
       "bottomText": "Bottom caption text (if template supports it)",
       "humor_type": "irony|absurdist|relatable|observational|dark|wholesome",

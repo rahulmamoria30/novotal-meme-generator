@@ -76,7 +76,9 @@ const SuggestionGrid = () => {
               />
             </div>
             <div className="suggestion-info">
-              <span className="template-name">{suggestion.template?.name}</span>
+              <span className="template-name">
+                {suggestion.name || suggestion.template?.name}
+              </span>
               <span className="humor-badge">{suggestion.humor_type}</span>
             </div>
           </div>
