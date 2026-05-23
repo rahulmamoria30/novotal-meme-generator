@@ -2,7 +2,6 @@ import { useEffect, useState } from "react"
 import { Link } from "react-router-dom"
 import { getAllMemes } from "../utils/api"
 import "./WallPage.css"
-
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000"
 
 const totalReactions = (reactions) => {
