@@ -1,5 +1,5 @@
 const { memeTemplates } = require("./templates")
-
+// AI utility to analyze an image and generate meme caption suggestions using OpenRouter API and a set of predefined templates.
 /**
  * Analyze image and generate meme suggestions using OpenRouter API
  * @param {string} imageBase64 - Base64 encoded image
