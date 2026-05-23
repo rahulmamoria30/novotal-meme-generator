@@ -94,12 +94,11 @@ Use DIFFERENT templates and humor styles. Be creative and make people laugh!`
         Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
         "HTTP-Referer":
           process.env.OPENROUTER_SITE_URL || "http://localhost:5173",
-        "X-Title":
-          process.env.OPENROUTER_SITE_NAME || "Novotal Meme Generator",
+        "X-Title": process.env.OPENROUTER_SITE_NAME || "Novotal Meme Generator",
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "anthropic/claude-3.5-sonnet",
+        model: "~anthropic/claude-sonnet-latest",
         messages: [
           {
             role: "user",

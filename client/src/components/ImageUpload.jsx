@@ -1,10 +1,12 @@
 import React, { useCallback, useRef, useState } from "react"
 import { useDropzone } from "react-dropzone"
+import { useNavigate } from "react-router-dom"
 import useMemeStore from "../store/memeStore"
 import { uploadImage, getSuggestions } from "../utils/api"
 import "./ImageUpload.css"
 
 const ImageUpload = () => {
+  const navigate = useNavigate()
   const {
     setUploadedImage,
     setSuggestions,
@@ -26,6 +28,7 @@ const ImageUpload = () => {
     try {
       setIsUploading(false)
       setLoadingSuggestions(true)
+      navigate("/templates")
 
       const reader = new FileReader()
       reader.onload = async (e) => {

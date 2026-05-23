@@ -9,11 +9,13 @@ import {
 import useImage from "use-image"
 import { toPng } from "html-to-image"
 import { saveAs } from "file-saver"
+import { useNavigate } from "react-router-dom"
 import useMemeStore from "../store/memeStore"
 import { saveMeme, getTemplates } from "../utils/api"
 import "./MemeEditor.css"
 
 const MemeEditor = () => {
+  const navigate = useNavigate()
   const stageRef = useRef(null)
   const topTextRef = useRef(null)
   const bottomTextRef = useRef(null)
@@ -52,6 +54,18 @@ const MemeEditor = () => {
   // Text positions (draggable)
   const [topTextPos, setTopTextPos] = useState({ x: 0, y: 30 })
   const [bottomTextPos, setBottomTextPos] = useState({ x: 0, y: 0 })
+
+  const textPadding = 16
+  const clampTextPos = (x, y, node) => {
+    if (!node) return { x, y }
+    const rect = node.getClientRect()
+    const maxX = Math.max(0, dimensions.width - rect.width)
+    const maxY = Math.max(0, dimensions.height - rect.height)
+    return {
+      x: Math.min(Math.max(x, 0), maxX),
+      y: Math.min(Math.max(y, 0), maxY),
+    }
+  }
 
   // Load templates
   useEffect(() => {
@@ -114,10 +128,11 @@ const MemeEditor = () => {
 
   const handleDragEnd = (e, isTop) => {
     const pos = { x: e.target.x(), y: e.target.y() }
+    const clamped = clampTextPos(pos.x, pos.y, e.target)
     if (isTop) {
-      setTopTextPos(pos)
+      setTopTextPos(clamped)
     } else {
-      setBottomTextPos(pos)
+      setBottomTextPos(clamped)
     }
   }
 
@@ -219,12 +234,20 @@ const MemeEditor = () => {
               )}
 
               {/* Top Text */}
+              <Rect
+                x={0}
+                y={Math.max(0, topTextPos.y - 14)}
+                width={dimensions.width}
+                height={scaledFontSize * 2.2 + 24}
+                fill="rgba(0, 0, 0, 0.35)"
+                cornerRadius={12}
+              />
               <Text
                 ref={topTextRef}
                 text={topText.toUpperCase()}
                 x={topTextPos.x}
                 y={topTextPos.y}
-                width={dimensions.width}
+                width={Math.max(100, dimensions.width - textPadding * 2)}
                 fontSize={scaledFontSize}
                 fontFamily={fontFamily}
                 fill={textColor}
@@ -241,15 +264,24 @@ const MemeEditor = () => {
                 shadowOffsetY={2}
                 wrap="word"
                 lineHeight={1.2}
+                padding={textPadding}
               />
 
               {/* Bottom Text */}
+              <Rect
+                x={0}
+                y={Math.max(0, bottomTextPos.y - 14)}
+                width={dimensions.width}
+                height={scaledFontSize * 2.2 + 24}
+                fill="rgba(0, 0, 0, 0.35)"
+                cornerRadius={12}
+              />
               <Text
                 ref={bottomTextRef}
                 text={bottomText.toUpperCase()}
                 x={bottomTextPos.x}
                 y={bottomTextPos.y}
-                width={dimensions.width}
+                width={Math.max(100, dimensions.width - textPadding * 2)}
                 fontSize={scaledFontSize}
                 fontFamily={fontFamily}
                 fill={textColor}
@@ -266,6 +298,7 @@ const MemeEditor = () => {
                 shadowOffsetY={2}
                 wrap="word"
                 lineHeight={1.2}
+                padding={textPadding}
               />
 
               {/* Transformer for selected text */}

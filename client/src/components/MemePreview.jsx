@@ -27,9 +27,12 @@ const MemePreview = ({
         const containerWidth = containerRef.current.offsetWidth
         const aspectRatio = image ? image.width / image.height : 1
         const calculatedHeight = containerWidth / aspectRatio
+        // Use real aspect ratio, but clamp very tall/wide images so layout stays sane
+        const maxHeight = containerWidth * 1.4
+        const minHeight = containerWidth * 0.6
         setDimensions({
           width: containerWidth,
-          height: Math.min(calculatedHeight, containerWidth),
+          height: Math.max(minHeight, Math.min(calculatedHeight, maxHeight)),
         })
       }
     }
@@ -46,35 +49,78 @@ const MemePreview = ({
     strokeWidth: 3,
   }
 
+  const padding = 16
+  const textWidth = Math.max(100, dimensions.width - padding * 2)
+
   const renderText = (text, position, isTop = true) => {
     if (!text) return null
 
-    const fontSize = (position?.fontSize || 48) * (dimensions.width / 500)
-    const x = ((position?.x || 50) / 100) * dimensions.width
+    // Scale font with width, with a readable floor
+    const scaledFontSize = (position?.fontSize || 48) * (dimensions.width / 450)
+    let fontSize = Math.max(scaledFontSize, 20)
+
+    // Each text block can use at most 40% of the canvas height — guarantees both
+    // top and bottom captions stay inside the image without overlapping
+    const maxBlockHeight = dimensions.height * 0.4
+    const lineHeight = 1.2
+    const verticalPadding = 16
+
+    // Estimate lines at current font size; if it overflows the cap, shrink to fit
+    const estimateLines = (size) => {
+      const charsPerLine = Math.max(6, Math.floor(textWidth / (size * 0.55)))
+      return Math.max(1, Math.ceil(text.length / charsPerLine))
+    }
+
+    let lines = estimateLines(fontSize)
+    let blockHeight = fontSize * lineHeight * lines + verticalPadding
+
+    if (blockHeight > maxBlockHeight) {
+      // Shrink font until block fits, with a hard floor so it stays legible
+      const scale = maxBlockHeight / blockHeight
+      fontSize = Math.max(14, fontSize * scale)
+      lines = estimateLines(fontSize)
+      blockHeight = Math.min(
+        maxBlockHeight,
+        fontSize * lineHeight * lines + verticalPadding
+      )
+    }
+
     const y = isTop
-      ? ((position?.y || 8) / 100) * dimensions.height
-      : dimensions.height - fontSize * 2 - 20
+      ? padding
+      : dimensions.height - blockHeight - padding
 
     return (
-      <Text
-        text={text.toUpperCase()}
-        x={0}
-        y={y}
-        width={dimensions.width}
-        fontSize={fontSize}
-        fontFamily={style.fontFamily || "Impact"}
-        fill={style.fill || "#ffffff"}
-        stroke={style.stroke || "#000000"}
-        strokeWidth={style.strokeWidth || 3}
-        align="center"
-        verticalAlign="middle"
-        shadowColor={style.shadow ? "#000000" : "transparent"}
-        shadowBlur={style.shadow ? 4 : 0}
-        shadowOffsetX={style.shadow ? 2 : 0}
-        shadowOffsetY={style.shadow ? 2 : 0}
-        wrap="word"
-        lineHeight={1.2}
-      />
+      <>
+        <Rect
+          x={padding / 2}
+          y={y}
+          width={dimensions.width - padding}
+          height={blockHeight}
+          fill="rgba(0, 0, 0, 0.65)"
+          cornerRadius={8}
+        />
+        <Text
+          text={text.toUpperCase()}
+          x={padding}
+          y={y}
+          width={textWidth}
+          height={blockHeight}
+          fontSize={fontSize}
+          fontFamily={style.fontFamily || "Impact"}
+          fill="#ffffff"
+          stroke="#000000"
+          strokeWidth={Math.max(1, fontSize * 0.04)}
+          align="center"
+          verticalAlign="middle"
+          shadowColor="#000000"
+          shadowBlur={4}
+          shadowOffsetX={1}
+          shadowOffsetY={1}
+          wrap="word"
+          lineHeight={lineHeight}
+          ellipsis={true}
+        />
+      </>
     )
   }
 

@@ -1,9 +1,11 @@
 import React from "react"
+import { useNavigate } from "react-router-dom"
 import useMemeStore from "../store/memeStore"
 import MemePreview from "./MemePreview"
 import "./SuggestionGrid.css"
 
 const SuggestionGrid = () => {
+  const navigate = useNavigate()
   const {
     suggestions,
     isLoadingSuggestions,
@@ -11,6 +13,16 @@ const SuggestionGrid = () => {
     selectSuggestion,
     resetToUpload,
   } = useMemeStore()
+
+  const handlePick = (suggestion) => {
+    selectSuggestion(suggestion)
+    navigate("/edit")
+  }
+
+  const handleBack = () => {
+    resetToUpload()
+    navigate("/")
+  }
 
   if (isLoadingSuggestions) {
     return (
@@ -29,7 +41,7 @@ const SuggestionGrid = () => {
     return (
       <div className="no-suggestions">
         <p>No suggestions available. Try uploading a different image.</p>
-        <button onClick={resetToUpload} className="btn btn-retry">
+        <button onClick={handleBack} className="btn btn-retry">
           Try Again
         </button>
       </div>
@@ -41,7 +53,7 @@ const SuggestionGrid = () => {
       <div className="suggestion-header">
         <h2>Pick Your Meme</h2>
         <p>AI generated 6 different formats based on your photo</p>
-        <button onClick={resetToUpload} className="btn btn-back">
+        <button onClick={handleBack} className="btn btn-back">
           ← Different Photo
         </button>
       </div>
@@ -51,7 +63,7 @@ const SuggestionGrid = () => {
           <div
             key={index}
             className="suggestion-card"
-            onClick={() => selectSuggestion(suggestion)}
+            onClick={() => handlePick(suggestion)}
           >
             <div className="preview-wrapper">
               <MemePreview

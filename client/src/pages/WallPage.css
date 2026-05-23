@@ -1,0 +1,139 @@
+.wall-container {
+  padding: 1.5rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.wall-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.wall-header h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: #1f2937;
+}
+
+.wall-header p {
+  color: #6b7280;
+}
+
+.wall-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.wall-card {
+  background: white;
+  border-radius: 1rem;
+  overflow: hidden;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.25s ease;
+  border: 3px solid transparent;
+  display: flex;
+  flex-direction: column;
+}
+
+.wall-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.12);
+  border-color: #667eea;
+}
+
+.wall-image-wrap {
+  background: #f3f4f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 220px;
+}
+
+.wall-image-wrap img {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: contain;
+  max-height: 360px;
+}
+
+.wall-meta {
+  padding: 0.75rem 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.875rem;
+  color: #6b7280;
+  border-top: 1px solid #f3f4f6;
+}
+
+.wall-reactions {
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.wall-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  text-align: center;
+  padding: 2rem;
+  gap: 1rem;
+}
+
+.wall-state h2 {
+  font-size: 1.5rem;
+  color: #1f2937;
+}
+
+.wall-state p {
+  color: #6b7280;
+}
+
+.wall-error {
+  color: #dc2626;
+}
+
+.wall-link-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 0.625rem 1.25rem;
+  border-radius: 9999px;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.875rem;
+}
+
+.wall-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #e5e7eb;
+  border-top-color: #667eea;
+  border-radius: 50%;
+  animation: wall-spin 0.9s linear infinite;
+}
+
+@keyframes wall-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 640px) {
+  .wall-container {
+    padding: 1rem;
+  }
+  .wall-header h2 {
+    font-size: 1.5rem;
+  }
+  .wall-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+}
