@@ -1,0 +1,166 @@
+const { memeTemplates } = require("./templates")
+
+/**
+ * Analyze image and generate meme suggestions using OpenRouter API
+ * @param {string} imageBase64 - Base64 encoded image
+ * @param {string} mimeType - Image MIME type
+ * @param {string} userPrompt - Optional user context/direction for the meme
+ * @returns {Promise<Array>} Array of meme suggestions
+ */
+async function generateMemeSuggestions(
+  imageBase64,
+  mimeType = "image/jpeg",
+  userPrompt = ""
+) {
+  const templates = memeTemplates
+
+  const templateDescriptions = templates
+    .map((t) => `- ${t.id}: ${t.name} - ${t.description}`)
+    .join("\n")
+
+  // Build the prompt based on whether user provided text
+  let userContext = ""
+  let instructions = ""
+
+  if (userPrompt && userPrompt.trim()) {
+    userContext = `
+USER'S TEXT: "${userPrompt}"
+
+CRITICAL: The user has provided their own text/idea! Your job is to:
+1. USE THEIR TEXT DIRECTLY in the meme captions (as top or bottom text)
+2. ENHANCE IT to make it funnier while keeping their core message
+3. Create variations that INCORPORATE their words
+4. Make it work with the image - add visual humor
+`
+    instructions = `
+REQUIREMENTS FOR USER-PROVIDED TEXT:
+- Suggestion 1-2: Use their EXACT text (or very close) as the main caption, add complementary text
+- Suggestion 3-4: Enhance/remix their text to make it funnier (keep the spirit)
+- Suggestion 5-6: Creative variations inspired by their theme
+
+The user's text MUST be recognizable in at least 4 of the 6 suggestions!
+`
+  } else {
+    instructions = `
+Generate 6 completely original meme captions based on what you see in the image.
+Use internet humor, cultural references, and relatable situations.
+`
+  }
+
+  const prompt = `You are a meme expert and comedy writer. Analyze this image and create 6 meme suggestions.
+${userContext}
+Available meme templates:
+${templateDescriptions}
+
+${instructions}
+
+For each suggestion:
+1. Pick the most fitting template for the joke
+2. Write captions that are ACTUALLY FUNNY - use wordplay, irony, unexpected twists
+3. Connect the caption to what's VISUALLY in the image
+4. Be edgy but not offensive - aim for viral-worthy humor
+
+IMPORTANT: The humor should come from the CONTRAST or CONNECTION between the image and the text. Generic descriptions are NOT funny.
+
+Respond with JSON:
+{
+  "suggestions": [
+    {
+      "templateId": "template-id-here",
+      "topText": "Top caption text",
+      "bottomText": "Bottom caption text (if template supports it)",
+      "humor_type": "irony|absurdist|relatable|observational|dark|wholesome",
+      "explanation": "Brief explanation of why this is funny"
+    }
+  ]
+}
+
+Use DIFFERENT templates and humor styles. Be creative and make people laugh!`
+
+  if (!process.env.OPENROUTER_API_KEY) {
+    throw new Error("OPENROUTER_API_KEY is not configured on the server")
+  }
+
+  const imageDataUrl = `data:${mimeType};base64,${imageBase64}`
+
+  console.log("Calling OpenRouter API for meme suggestions...")
+  console.log("User prompt:", userPrompt || "(none)")
+
+  const response = await fetch(
+    "https://openrouter.ai/api/v1/chat/completions",
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
+        "HTTP-Referer":
+          process.env.OPENROUTER_SITE_URL || "http://localhost:5173",
+        "X-Title":
+          process.env.OPENROUTER_SITE_NAME || "Novotal Meme Generator",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "anthropic/claude-3.5-sonnet",
+        messages: [
+          {
+            role: "user",
+            content: [
+              {
+                type: "image_url",
+                image_url: { url: imageDataUrl },
+              },
+              {
+                type: "text",
+                text: prompt,
+              },
+            ],
+          },
+        ],
+        max_tokens: 2000,
+      }),
+    }
+  )
+
+  console.log("OpenRouter response status:", response.status)
+
+  if (!response.ok) {
+    const errorBody = await response.text()
+    let errorMessage = response.statusText
+    try {
+      const errorJson = JSON.parse(errorBody)
+      errorMessage = errorJson.error?.message || errorMessage
+    } catch {
+      errorMessage = errorBody || errorMessage
+    }
+    console.error("OpenRouter API error:", errorMessage)
+    throw new Error(
+      `OpenRouter API error (${response.status}): ${errorMessage}`
+    )
+  }
+
+  const data = await response.json()
+  const content = data.choices?.[0]?.message?.content
+  if (!content) {
+    throw new Error("LLM returned an empty response")
+  }
+
+  const jsonMatch = content.match(/\{[\s\S]*\}/)
+  if (!jsonMatch) {
+    throw new Error("Failed to parse meme suggestions from AI response")
+  }
+
+  const parsed = JSON.parse(jsonMatch[0])
+  if (!Array.isArray(parsed.suggestions) || parsed.suggestions.length === 0) {
+    throw new Error("LLM returned no meme suggestions")
+  }
+
+  console.log("Parsed", parsed.suggestions.length, "meme suggestions")
+  return parsed.suggestions.map((suggestion) => ({
+    ...suggestion,
+    template:
+      templates.find((t) => t.id === suggestion.templateId) || templates[0],
+  }))
+}
+
+module.exports = {
+  generateMemeSuggestions,
+}

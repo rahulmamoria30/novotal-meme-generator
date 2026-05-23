@@ -1,0 +1,249 @@
+.share-page {
+  min-height: 100vh;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+}
+
+.share-page.loading,
+.share-page.error {
+  text-align: center;
+}
+
+.share-page.error h2 {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.share-content {
+  max-width: 500px;
+  width: 100%;
+  background: white;
+  border-radius: 1.5rem;
+  overflow: hidden;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+}
+
+.meme-display {
+  background: #e2e8f0;
+  padding: 0.5rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.meme-image {
+  width: 100%;
+  display: block;
+  border-radius: 0.5rem;
+}
+
+.reactions-section {
+  padding: 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.reactions-section h3 {
+  font-size: 1rem;
+  color: #6b7280;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.reaction-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.reaction-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 1rem;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 60px;
+}
+
+.reaction-btn:hover {
+  transform: scale(1.1);
+  border-color: #667eea;
+}
+
+.reaction-btn.active {
+  background: #f3f4ff;
+  border-color: #667eea;
+  transform: scale(1.05);
+}
+
+.reaction-emoji {
+  font-size: 1.75rem;
+  line-height: 1;
+}
+
+.reaction-count {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #6b7280;
+  margin-top: 0.25rem;
+}
+
+.reaction-total {
+  text-align: center;
+  margin-top: 1rem;
+  font-size: 0.875rem;
+  color: #9ca3af;
+}
+
+.share-section {
+  padding: 1.5rem;
+}
+
+.share-section h3 {
+  font-size: 1rem;
+  color: #6b7280;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.share-buttons {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+}
+
+.share-btn {
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+}
+
+.share-btn.copy {
+  background: #f3f4f6;
+  color: #374151;
+  grid-column: span 2;
+}
+
+.share-btn.copy:hover {
+  background: #e5e7eb;
+}
+
+.share-btn.twitter {
+  background: #1da1f2;
+  color: white;
+}
+
+.share-btn.facebook {
+  background: #4267b2;
+  color: white;
+}
+
+.share-btn.whatsapp {
+  background: #25d366;
+  color: white;
+  grid-column: span 2;
+}
+
+.share-btn:hover {
+  transform: scale(1.02);
+}
+
+.btn-create {
+  width: calc(100% - 3rem);
+  margin: 1.5rem;
+  padding: 1rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 1rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.btn-create:hover {
+  transform: scale(1.02);
+}
+
+/* Floating reaction animation */
+.floating-reaction {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 8rem;
+  animation: float-up 1s ease-out forwards;
+  pointer-events: none;
+  z-index: 1000;
+}
+
+@keyframes float-up {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -150%) scale(2);
+  }
+}
+
+/* Spinner */
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid #e5e7eb;
+  border-top-color: #667eea;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Mobile responsive */
+@media (max-width: 640px) {
+  .share-page {
+    padding: 0.5rem;
+    justify-content: flex-start;
+    padding-top: 1rem;
+  }
+
+  .share-content {
+    border-radius: 1rem;
+  }
+
+  .reactions-section,
+  .share-section {
+    padding: 1rem;
+  }
+
+  .reaction-btn {
+    padding: 0.5rem 0.75rem;
+    min-width: 50px;
+  }
+
+  .reaction-emoji {
+    font-size: 1.5rem;
+  }
+
+  .btn-create {
+    margin: 1rem;
+    width: calc(100% - 2rem);
+  }
+}
