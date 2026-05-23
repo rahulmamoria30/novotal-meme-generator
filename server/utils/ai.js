@@ -137,7 +137,7 @@ Also keep captions SHORT (under 8 words per line) so they stay readable on small
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "~anthropic/claude-sonnet-latest",
+        model: "google/gemini-2.0-flash-001",
         messages: [
           {
             role: "user",

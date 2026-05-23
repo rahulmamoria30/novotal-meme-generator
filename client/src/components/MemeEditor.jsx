@@ -148,12 +148,17 @@ const MemeEditor = () => {
   const [textColor, setTextColor] = useState("#ffffff")
   const [strokeColor, setStrokeColor] = useState("#000000")
   const [strokeWidth, setStrokeWidth] = useState(3)
+  const [topAlign, setTopAlign] = useState("center")
+  const [bottomAlign, setBottomAlign] = useState("center")
+
+  // Text box width — narrower than canvas so text can be dragged horizontally
+  const textPadding = 16
+  const textBoxWidth = Math.max(120, dimensions.width * 0.85)
 
   // Text positions (draggable)
   const [topTextPos, setTopTextPos] = useState({ x: 0, y: 30 })
   const [bottomTextPos, setBottomTextPos] = useState({ x: 0, y: 0 })
 
-  const textPadding = 16
   const clampTextPos = (x, y, node) => {
     if (!node) return { x, y }
     const rect = node.getClientRect()
@@ -183,14 +188,20 @@ const MemeEditor = () => {
         600
       )
 
+      const boxWidth = Math.max(120, containerWidth * 0.85)
+      const centerX = (containerWidth - boxWidth) / 2
+
       if (image) {
         const aspectRatio = image.width / image.height
         const height = containerWidth / aspectRatio
-        setDimensions({ width: containerWidth, height: Math.min(height, 600) })
-        setBottomTextPos({ x: 0, y: Math.min(height, 600) - 80 })
+        const finalHeight = Math.min(height, 600)
+        setDimensions({ width: containerWidth, height: finalHeight })
+        setTopTextPos({ x: centerX, y: 30 })
+        setBottomTextPos({ x: centerX, y: finalHeight - 80 })
       } else {
         setDimensions({ width: containerWidth, height: containerWidth })
-        setBottomTextPos({ x: 0, y: containerWidth - 80 })
+        setTopTextPos({ x: centerX, y: 30 })
+        setBottomTextPos({ x: centerX, y: containerWidth - 80 })
       }
     }
 

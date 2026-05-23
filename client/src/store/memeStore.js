@@ -1,4 +1,5 @@
 import { create } from "zustand"
+import { persist, createJSONStorage } from "zustand/middleware"
 import { nanoid } from "nanoid"
 
 // Generate a persistent session ID for the user
@@ -11,7 +12,9 @@ const getSessionId = () => {
   return sessionId
 }
 
-export const useMemeStore = create((set, get) => ({
+export const useMemeStore = create(
+  persist(
+    (set, get) => ({
   // Session
   sessionId: getSessionId(),
 
@@ -150,6 +153,26 @@ export const useMemeStore = create((set, get) => ({
         },
       ],
     })),
-}))
+    }),
+    {
+      name: "meme-store",
+      storage: createJSONStorage(() => localStorage),
+      partialize: (state) => ({
+        step: state.step,
+        uploadedImage: state.uploadedImage,
+        uploadedImageUrl: state.uploadedImageUrl,
+        userPrompt: state.userPrompt,
+        suggestions: state.suggestions,
+        draftId: state.draftId,
+        selectedSuggestion: state.selectedSuggestion,
+        selectedTemplate: state.selectedTemplate,
+        editorTexts: state.editorTexts,
+        editorConfig: state.editorConfig,
+        savedMeme: state.savedMeme,
+        shareUrl: state.shareUrl,
+      }),
+    }
+  )
+)
 
 export default useMemeStore
