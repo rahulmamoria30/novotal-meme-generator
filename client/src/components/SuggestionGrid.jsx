@@ -31,8 +31,8 @@ const SuggestionGrid = () => {
           <div className="ai-brain">🧠</div>
           <div className="ai-sparkles">✨</div>
         </div>
-        <h2>AI is analyzing your image...</h2>
-        <p>Generating 6 hilarious meme ideas</p>
+        <h2>cooking it up...</h2>
+        <p>ai is in the kitchen, plating 6 hot takes</p>
       </div>
     )
   }
@@ -40,9 +40,9 @@ const SuggestionGrid = () => {
   if (!suggestions || suggestions.length === 0) {
     return (
       <div className="no-suggestions">
-        <p>No suggestions available. Try uploading a different image.</p>
+        <p>kitchen's closed bestie 🫥 try another pic?</p>
         <button onClick={handleBack} className="btn btn-retry">
-          Try Again
+          start over
         </button>
       </div>
     )
@@ -51,10 +51,11 @@ const SuggestionGrid = () => {
   return (
     <div className="suggestion-container">
       <div className="suggestion-header">
-        <h2>Pick Your Meme</h2>
-        <p>AI generated 6 different formats based on your photo</p>
+        <span className="suggestion-kicker">pick your fighter</span>
+        <h2>the menu 🍽️</h2>
+        <p>ai served 6 takes. pick the one that ate the most.</p>
         <button onClick={handleBack} className="btn btn-back">
-          ← Different Photo
+          ← yuck, new pic
         </button>
       </div>
 

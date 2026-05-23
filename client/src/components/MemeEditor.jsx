@@ -12,8 +12,101 @@ import { toPng } from "html-to-image"
 import { saveAs } from "file-saver"
 import { useNavigate } from "react-router-dom"
 import useMemeStore from "../store/memeStore"
-import { saveMeme, getTemplates } from "../utils/api"
+import { saveMeme, getTemplates, getSuggestions } from "../utils/api"
 import "./MemeEditor.css"
+
+// Vibe presets — one-click style swaps
+const VIBES = [
+  {
+    id: "impact",
+    name: "classic",
+    emoji: "💪",
+    bg: "var(--c-paper)",
+    style: {
+      fontFamily: "Impact",
+      textColor: "#ffffff",
+      strokeColor: "#000000",
+      strokeWidth: 3,
+    },
+  },
+  {
+    id: "comic",
+    name: "chaos",
+    emoji: "🤡",
+    bg: "var(--c-pink)",
+    style: {
+      fontFamily: "Comic Sans MS",
+      textColor: "#ffffff",
+      strokeColor: "#ff3d8a",
+      strokeWidth: 4,
+    },
+  },
+  {
+    id: "neon",
+    name: "cursed",
+    emoji: "👁️",
+    bg: "var(--c-purple)",
+    style: {
+      fontFamily: "Arial Black",
+      textColor: "#b6ff3d",
+      strokeColor: "#6c49ff",
+      strokeWidth: 5,
+    },
+  },
+  {
+    id: "y2k",
+    name: "y2k",
+    emoji: "💿",
+    bg: "var(--c-cyan)",
+    style: {
+      fontFamily: "Helvetica",
+      textColor: "#46e4ff",
+      strokeColor: "#ff3d8a",
+      strokeWidth: 3,
+    },
+  },
+  {
+    id: "minimal",
+    name: "minimal",
+    emoji: "🧊",
+    bg: "var(--c-bg-2)",
+    style: {
+      fontFamily: "Helvetica",
+      textColor: "#ffffff",
+      strokeColor: "#000000",
+      strokeWidth: 1,
+    },
+  },
+  {
+    id: "ransom",
+    name: "ransom",
+    emoji: "📰",
+    bg: "var(--c-yellow)",
+    style: {
+      fontFamily: "Times New Roman",
+      textColor: "#000000",
+      strokeColor: "#ffffff",
+      strokeWidth: 2,
+    },
+  },
+]
+
+const FONT_OPTIONS = [
+  "Impact",
+  "Arial Black",
+  "Comic Sans MS",
+  "Helvetica",
+  "Times New Roman",
+]
+
+const PRO_TIPS = [
+  "drag the text. you have the rizz.",
+  "shorter caption = more ratio potential",
+  "if it makes YOU laugh, it ate.",
+  "white text + black outline is undefeated",
+  "the contrast between caption and pic is the joke",
+  "no caption is also a vibe",
+]
 
 const MemeEditor = () => {
   const navigate = useNavigate()
@@ -28,6 +121,11 @@ const MemeEditor = () => {
   const [isSaving, setIsSaving] = useState(false)
   const [templates, setTemplates] = useState([])
   const [showTemplates, setShowTemplates] = useState(false)
+  const [isRemixing, setIsRemixing] = useState(false)
+  const [remixError, setRemixError] = useState(null)
+  const [proTipIndex, setProTipIndex] = useState(() =>
+    Math.floor(Math.random() * PRO_TIPS.length)
+  )
 
   const {
     uploadedImage,
@@ -38,13 +136,14 @@ const MemeEditor = () => {
     resetToUpload,
     changeTemplate,
     sessionId,
+    draftId,
   } = useMemeStore()
 
   const [image] = useImage(uploadedImage, "anonymous")
 
   const [topText, setTopText] = useState(editorTexts[0]?.text || "")
   const [bottomText, setBottomText] = useState(editorTexts[1]?.text || "")
-  const [fontSize, setFontSize] = useState(48)
+  const [fontSize, setFontSize] = useState(28)
   const [fontFamily, setFontFamily] = useState(
     selectedTemplate?.style?.fontFamily || "Impact"
   )
@@ -104,6 +203,21 @@ const MemeEditor = () => {
     if (editorTexts[0]) setTopText(editorTexts[0].text)
     if (editorTexts[1]) setBottomText(editorTexts[1].text)
   }, [editorTexts])
+
+  // Keyboard shortcuts when no text input is focused
+  useEffect(() => {
+    const handler = (e) => {
+      const tag = (e.target?.tagName || "").toLowerCase()
+      const inField = tag === "input" || tag === "textarea" || tag === "select"
+      if (inField || e.metaKey || e.ctrlKey || e.altKey) return
+      const key = e.key.toLowerCase()
+      if (key === "r") handleRemix()
+      else if (key === "x") handleSurprise()
+      else if (key === "u") handleReset()
+    }
+    window.addEventListener("keydown", handler)
+    return () => window.removeEventListener("keydown", handler)
+  })
 
   // Update transformer
   useEffect(() => {
@@ -186,6 +300,7 @@ const MemeEditor = () => {
         templateId: selectedTemplate?.id,
         texts: { topText, bottomText },
         creatorSessionId: sessionId,
+        draftId,
       })
 
       setSavedMeme(result.meme, result.shareUrl)
@@ -198,9 +313,66 @@ const MemeEditor = () => {
     }
   }
 
-  const handleStartOver = () => {
-    resetToUpload()
-    navigate("/")
+  // Back button goes to the templates page so users can pick a different
+  // suggestion without losing their uploaded image or the 6 AI options.
+  const handleBackToTemplates = () => {
+    navigate("/templates")
+  }
+
+  // Apply a one-click vibe preset (font + colors + outline width)
+  const applyVibe = (vibe) => {
+    setFontFamily(vibe.style.fontFamily)
+    setTextColor(vibe.style.textColor)
+    setStrokeColor(vibe.style.strokeColor)
+    setStrokeWidth(vibe.style.strokeWidth)
+  }
+
+  // Reset caption text back to whatever the AI originally suggested
+  const handleReset = () => {
+    setTopText(editorTexts[0]?.text || "")
+    setBottomText(editorTexts[1]?.text || "")
+  }
+
+  // Surprise me: random template + random font + random vibe + random font size
+  const handleSurprise = () => {
+    if (templates.length > 0) {
+      const t = templates[Math.floor(Math.random() * templates.length)]
+      changeTemplate(t)
+    }
+    const v = VIBES[Math.floor(Math.random() * VIBES.length)]
+    applyVibe(v)
+    setFontSize(20 + Math.floor(Math.random() * 30))
+    setProTipIndex((i) => (i + 1) % PRO_TIPS.length)
+  }
+
+  // Re-roll the AI for fresh captions on the same image
+  const handleRemix = async () => {
+    if (!uploadedImage || isRemixing) return
+    setIsRemixing(true)
+    setRemixError(null)
+    try {
+      const { suggestions } = await getSuggestions(
+        null,
+        uploadedImage,
+        "image/png",
+        "",
+        sessionId
+      )
+      if (!Array.isArray(suggestions) || suggestions.length === 0) {
+        throw new Error("AI returned nothing")
+      }
+      // Prefer a suggestion that uses the current template, else first.
+      const match =
+        suggestions.find((s) => s.templateId === selectedTemplate?.id) ||
+        suggestions[0]
+      setTopText(match.topText || "")
+      setBottomText(match.bottomText || "")
+    } catch (err) {
+      console.error("Remix failed:", err)
+      setRemixError(err.message || "remix flopped")
+    } finally {
+      setIsRemixing(false)
+    }
   }
 
   const handleTemplateChange = (template) => {
@@ -214,11 +386,42 @@ const MemeEditor = () => {
   return (
     <div className="editor-container">
       <div className="editor-header">
-        <button onClick={handleStartOver} className="btn btn-back">
-          ← Start Over
+        <button onClick={handleBackToTemplates} className="btn btn-back">
+          ← back to menu
         </button>
-        <h2>Edit Your Meme</h2>
+        <div className="editor-title-block">
+          <span className="editor-kicker">main character mode</span>
+          <h2>cook it your way</h2>
+        </div>
+        <div className="editor-quick-row">
+          <button
+            onClick={handleRemix}
+            className="quick-chip chip-remix"
+            disabled={isRemixing}
+            title="get new AI captions (R)"
+          >
+            {isRemixing ? "🌀 cooking..." : "🌀 remix"}
+          </button>
+          <button
+            onClick={handleSurprise}
+            className="quick-chip chip-surprise"
+            title="random vibe (X)"
+          >
+            🎲 surprise
+          </button>
+          <button
+            onClick={handleReset}
+            className="quick-chip chip-reset"
+            title="undo to AI original (U)"
+          >
+            ↺ reset
+          </button>
+        </div>
       </div>
+
+      {remixError && (
+        <div className="editor-flash">remix flopped: {remixError}</div>
+      )}
 
       <div className="editor-layout">
         {/* Canvas */}
@@ -327,122 +530,181 @@ const MemeEditor = () => {
 
         {/* Controls */}
         <div className="controls-panel">
-          <div className="control-group">
-            <label>Top Text</label>
-            <textarea
-              value={topText}
-              onChange={(e) => setTopText(e.target.value)}
-              placeholder="Enter top text..."
-              rows={2}
-            />
-          </div>
+          {/* === TEXT SECTION === */}
+          <section className="control-section">
+            <div className="section-head">
+              <span className="section-tag">01</span>
+              <span className="section-title">caption</span>
+            </div>
 
-          <div className="control-group">
-            <label>Bottom Text</label>
-            <textarea
-              value={bottomText}
-              onChange={(e) => setBottomText(e.target.value)}
-              placeholder="Enter bottom text..."
-              rows={2}
-            />
-          </div>
-
-          <div className="control-row">
             <div className="control-group">
-              <label>Font Size</label>
+              <div className="label-row">
+                <label>top text 🔝</label>
+                <span className="char-chip">{topText.length} chars</span>
+              </div>
+              <textarea
+                value={topText}
+                onChange={(e) => setTopText(e.target.value)}
+                placeholder="spill it..."
+                rows={2}
+              />
+            </div>
+
+            <div className="control-group">
+              <div className="label-row">
+                <label>bottom text 👇</label>
+                <span className="char-chip">{bottomText.length} chars</span>
+              </div>
+              <textarea
+                value={bottomText}
+                onChange={(e) => setBottomText(e.target.value)}
+                placeholder="...and the kicker"
+                rows={2}
+              />
+            </div>
+          </section>
+
+          {/* === VIBE SECTION === */}
+          <section className="control-section">
+            <div className="section-head">
+              <span className="section-tag">02</span>
+              <span className="section-title">vibe presets</span>
+            </div>
+            <div className="vibe-grid">
+              {VIBES.map((v) => (
+                <button
+                  key={v.id}
+                  type="button"
+                  className="vibe-chip"
+                  style={{ background: v.bg }}
+                  onClick={() => applyVibe(v)}
+                >
+                  <span className="vibe-emoji">{v.emoji}</span>
+                  <span className="vibe-name">{v.name}</span>
+                </button>
+              ))}
+            </div>
+          </section>
+
+          {/* === STYLE SECTION === */}
+          <section className="control-section">
+            <div className="section-head">
+              <span className="section-tag">03</span>
+              <span className="section-title">style tweaks</span>
+            </div>
+
+            <div className="control-group">
+              <label>size · {fontSize}px</label>
               <input
                 type="range"
-                min="20"
+                min="14"
                 max="80"
                 value={fontSize}
                 onChange={(e) => setFontSize(Number(e.target.value))}
               />
-              <span>{fontSize}px</span>
             </div>
-          </div>
 
-          <div className="control-row">
             <div className="control-group">
-              <label>Font</label>
+              <label>font</label>
               <select
                 value={fontFamily}
                 onChange={(e) => setFontFamily(e.target.value)}
               >
-                <option value="Impact">Impact</option>
-                <option value="Arial Black">Arial Black</option>
-                <option value="Comic Sans MS">Comic Sans</option>
-                <option value="Helvetica">Helvetica</option>
-                <option value="Times New Roman">Times New Roman</option>
+                {FONT_OPTIONS.map((f) => (
+                  <option key={f} value={f}>
+                    {f}
+                  </option>
+                ))}
               </select>
             </div>
-          </div>
 
-          <div className="control-row colors">
+            <div className="control-row colors">
+              <div className="control-group">
+                <label>text</label>
+                <input
+                  type="color"
+                  value={textColor}
+                  onChange={(e) => setTextColor(e.target.value)}
+                />
+              </div>
+              <div className="control-group">
+                <label>outline</label>
+                <input
+                  type="color"
+                  value={strokeColor}
+                  onChange={(e) => setStrokeColor(e.target.value)}
+                />
+              </div>
+            </div>
+
             <div className="control-group">
-              <label>Text Color</label>
+              <label>outline thiccness · {strokeWidth}px</label>
               <input
-                type="color"
-                value={textColor}
-                onChange={(e) => setTextColor(e.target.value)}
+                type="range"
+                min="0"
+                max="8"
+                value={strokeWidth}
+                onChange={(e) => setStrokeWidth(Number(e.target.value))}
               />
             </div>
-            <div className="control-group">
-              <label>Outline</label>
-              <input
-                type="color"
-                value={strokeColor}
-                onChange={(e) => setStrokeColor(e.target.value)}
-              />
+          </section>
+
+          {/* === TEMPLATE SECTION === */}
+          <section className="control-section">
+            <div className="section-head">
+              <span className="section-tag">04</span>
+              <span className="section-title">template</span>
             </div>
+            <button
+              className="btn btn-template"
+              onClick={() => setShowTemplates(!showTemplates)}
+            >
+              🎨 {showTemplates ? "hide templates" : "swap template"}
+            </button>
+            {showTemplates && (
+              <div className="template-picker">
+                {templates.map((t) => (
+                  <button
+                    key={t.id}
+                    className={`template-option ${
+                      selectedTemplate?.id === t.id ? "active" : ""
+                    }`}
+                    onClick={() => handleTemplateChange(t)}
+                  >
+                    {t.name}
+                  </button>
+                ))}
+              </div>
+            )}
+          </section>
+
+          {/* === PRO TIP === */}
+          <div className="pro-tip">
+            <span className="pro-tip-label">💡 pro tip</span>
+            <span className="pro-tip-text">{PRO_TIPS[proTipIndex]}</span>
           </div>
 
-          <div className="control-group">
-            <label>Outline Width</label>
-            <input
-              type="range"
-              min="0"
-              max="8"
-              value={strokeWidth}
-              onChange={(e) => setStrokeWidth(Number(e.target.value))}
-            />
+          {/* === KEYBOARD HINTS === */}
+          <div className="kb-hints">
+            <span><kbd>R</kbd> remix</span>
+            <span><kbd>X</kbd> surprise</span>
+            <span><kbd>U</kbd> reset</span>
           </div>
 
-          <button
-            className="btn btn-template"
-            onClick={() => setShowTemplates(!showTemplates)}
-          >
-            🎨 Change Template
-          </button>
-
-          {showTemplates && (
-            <div className="template-picker">
-              {templates.map((t) => (
-                <button
-                  key={t.id}
-                  className={`template-option ${
-                    selectedTemplate?.id === t.id ? "active" : ""
-                  }`}
-                  onClick={() => handleTemplateChange(t)}
-                >
-                  {t.name}
-                </button>
-              ))}
-            </div>
-          )}
-
+          {/* === ACTIONS (sticky) === */}
           <div className="action-buttons">
             <button onClick={handleDownload} className="btn btn-download">
-              📥 Download PNG
+              📥 save the W
             </button>
             <button onClick={handleCopyToClipboard} className="btn btn-copy">
-              📋 Copy
+              📋 yoink
             </button>
             <button
               onClick={handleShare}
               className="btn btn-share"
               disabled={isSaving}
             >
-              {isSaving ? "..." : "🔗 Share"}
+              {isSaving ? "cooking..." : "🚀 post it"}
             </button>
           </div>
         </div>

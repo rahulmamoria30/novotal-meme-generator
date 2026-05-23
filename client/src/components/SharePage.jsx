@@ -118,7 +118,7 @@ const SharePage = () => {
     return (
       <div className="share-page loading">
         <div className="spinner"></div>
-        <p>Loading meme...</p>
+        <p>buffering vibes...</p>
       </div>
     )
   }
@@ -126,10 +126,10 @@ const SharePage = () => {
   if (error || !meme) {
     return (
       <div className="share-page error">
-        <h2>😅 Oops!</h2>
-        <p>{error || "Meme not found"}</p>
+        <h2>💀 rip</h2>
+        <p>{error || "this meme ghosted"}</p>
         <button onClick={() => navigate("/")} className="btn btn-primary">
-          Create a Meme
+          cook a fresh one
         </button>
       </div>
     )
@@ -160,7 +160,7 @@ const SharePage = () => {
         </div>
 
         <div className="reactions-section">
-          <h3>React to this meme!</h3>
+          <h3>drop a reaction ↓</h3>
           <div className="reaction-buttons">
             {REACTIONS.map(({ type, emoji, label }) => (
               <button
@@ -178,39 +178,39 @@ const SharePage = () => {
           </div>
 
           <div className="reaction-total">
-            {totalReactions} total reaction{totalReactions !== 1 ? "s" : ""}
+            {totalReactions} reaction{totalReactions !== 1 ? "s" : ""} · keep stacking 📈
           </div>
         </div>
 
         <div className="share-section">
-          <h3>Share this meme</h3>
+          <h3>spread it ↓</h3>
           <div className="share-buttons">
             <button onClick={copyShareLink} className="share-btn copy">
-              {showCopied ? "✓ Copied!" : "🔗 Copy Link"}
+              {showCopied ? "✓ yoinked" : "🔗 copy link"}
             </button>
             <button
               onClick={() => shareToSocial("twitter")}
               className="share-btn twitter"
             >
-              𝕏 Twitter
+              𝕏 the bird app
             </button>
             <button
               onClick={() => shareToSocial("facebook")}
               className="share-btn facebook"
             >
-              f Facebook
+              f boomer mode
             </button>
             <button
               onClick={() => shareToSocial("whatsapp")}
               className="share-btn whatsapp"
             >
-              💬 WhatsApp
+              💬 group chat
             </button>
           </div>
         </div>
 
         <button onClick={() => navigate("/")} className="btn btn-create">
-          ✨ Create Your Own Meme
+          ✨ cook your own
         </button>
       </div>
     </div>

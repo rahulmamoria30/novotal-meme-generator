@@ -32,20 +32,26 @@ export const uploadBase64Image = async (base64, mimeType) => {
   return response.data
 }
 
-// Get AI suggestions
+// Get AI suggestions. Returns { suggestions, draftId } so the client can
+// link the eventual shared meme to its draft row in history.
 export const getSuggestions = async (
   imageUrl,
   imageBase64,
   mimeType,
-  userPrompt = ""
+  userPrompt = "",
+  creatorSessionId = ""
 ) => {
   const response = await api.post("/api/suggest", {
     imageUrl,
     imageBase64,
     mimeType,
     userPrompt,
+    creatorSessionId,
   })
-  return response.data.suggestions
+  return {
+    suggestions: response.data.suggestions,
+    draftId: response.data.draftId || null,
+  }
 }
 
 // Save meme
@@ -63,6 +69,14 @@ export const getMeme = async (id) => {
 // Get all memes
 export const getAllMemes = async (limit = 50) => {
   const response = await api.get(`/api/memes?limit=${limit}`)
+  return response.data.memes
+}
+
+// Get memes created by a session (history)
+export const getMemesBySession = async (sessionId, limit = 50) => {
+  const response = await api.get(
+    `/api/memes/by-session/${sessionId}?limit=${limit}`
+  )
   return response.data.memes
 }
 

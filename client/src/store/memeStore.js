@@ -29,6 +29,7 @@ export const useMemeStore = create((set, get) => ({
   suggestions: [],
   isLoadingSuggestions: false,
   suggestionsError: null,
+  draftId: null,
 
   // Selected suggestion/template
   selectedSuggestion: null,
@@ -59,9 +60,10 @@ export const useMemeStore = create((set, get) => ({
       selectedSuggestion: null,
     }),
 
-  setSuggestions: (suggestions) =>
+  setSuggestions: (suggestions, draftId = null) =>
     set({
       suggestions,
+      draftId,
       isLoadingSuggestions: false,
       step: "pick",
     }),
@@ -123,6 +125,7 @@ export const useMemeStore = create((set, get) => ({
       uploadedImageUrl: null,
       userPrompt: "",
       suggestions: [],
+      draftId: null,
       selectedSuggestion: null,
       selectedTemplate: null,
       editorTexts: [],

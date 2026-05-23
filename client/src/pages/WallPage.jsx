@@ -51,7 +51,7 @@ const WallPage = () => {
     return (
       <div className="wall-state">
         <div className="wall-spinner" />
-        <p>Loading the wall…</p>
+        <p>scrolling the timeline...</p>
       </div>
     )
   }
@@ -61,7 +61,7 @@ const WallPage = () => {
       <div className="wall-state">
         <p className="wall-error">{error}</p>
         <Link to="/" className="wall-link-btn">
-          Back home
+          back home
         </Link>
       </div>
     )
@@ -70,10 +70,10 @@ const WallPage = () => {
   if (!memes.length) {
     return (
       <div className="wall-state">
-        <h2>The wall is empty</h2>
-        <p>Be the first to create and share a meme.</p>
+        <h2>nothing here yet 🦗</h2>
+        <p>be the first to ratio the timeline</p>
         <Link to="/" className="wall-link-btn">
-          Create a meme
+          cook the first one
         </Link>
       </div>
     )
@@ -82,8 +82,9 @@ const WallPage = () => {
   return (
     <div className="wall-container">
       <div className="wall-header">
-        <h2>Global Meme Wall</h2>
-        <p>{memes.length} meme{memes.length === 1 ? "" : "s"} shared by the community</p>
+        <span className="wall-kicker">the timeline</span>
+        <h2>the meme wall 🧱</h2>
+        <p>{memes.length} cooked up by the community · keep scrolling</p>
       </div>
 
       <div className="wall-grid">

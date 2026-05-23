@@ -1,5 +1,5 @@
 .wall-container {
-  padding: 1.5rem;
+  padding: 1.5rem 1rem;
   max-width: 1400px;
   margin: 0 auto;
 }
@@ -9,15 +9,34 @@
   margin-bottom: 2rem;
 }
 
-.wall-header h2 {
-  font-size: 2rem;
+.wall-kicker {
+  display: inline-block;
+  font-family: "Caveat", cursive;
+  font-size: 1.25rem;
   font-weight: 700;
+  color: var(--c-ink);
+  background: var(--c-cyan);
+  border: var(--border);
+  padding: 0.1rem 0.875rem;
+  border-radius: 999px;
+  transform: rotate(-3deg);
+  margin-bottom: 0.75rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.wall-header h2 {
+  font-family: "Archivo Black", sans-serif;
+  font-size: clamp(2rem, 5.5vw, 3rem);
+  font-weight: 900;
   margin-bottom: 0.5rem;
-  color: #1f2937;
+  color: var(--c-ink);
+  text-transform: lowercase;
+  letter-spacing: -0.02em;
 }
 
 .wall-header p {
-  color: #6b7280;
+  color: var(--c-ink-soft);
+  font-weight: 500;
 }
 
 .wall-grid {
@@ -27,30 +46,34 @@
 }
 
 .wall-card {
-  background: white;
-  border-radius: 1rem;
+  background: var(--c-paper);
+  border: var(--border);
+  border-radius: var(--radius);
   overflow: hidden;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-md);
   text-decoration: none;
   color: inherit;
-  transition: all 0.25s ease;
-  border: 3px solid transparent;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
   display: flex;
   flex-direction: column;
 }
 
+.wall-card:nth-child(3n + 1) { transform: rotate(-1deg); }
+.wall-card:nth-child(3n + 2) { transform: rotate(0.7deg); }
+.wall-card:nth-child(3n + 3) { transform: rotate(-0.5deg); }
+
 .wall-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.12);
-  border-color: #667eea;
+  transform: translate(-4px, -4px) rotate(0deg) !important;
+  box-shadow: var(--shadow-lg);
 }
 
 .wall-image-wrap {
-  background: #f3f4f6;
+  background: var(--c-bg-2);
   display: flex;
   align-items: center;
   justify-content: center;
   min-height: 220px;
+  border-bottom: var(--border);
 }
 
 .wall-image-wrap img {
@@ -62,18 +85,31 @@
 }
 
 .wall-meta {
-  padding: 0.75rem 1rem;
+  padding: 0.625rem 0.875rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
   font-size: 0.875rem;
-  color: #6b7280;
-  border-top: 1px solid #f3f4f6;
+  color: var(--c-ink-soft);
+  background: var(--c-paper);
 }
 
 .wall-reactions {
-  font-weight: 600;
-  color: #1f2937;
+  font-weight: 800;
+  color: var(--c-ink);
+  background: var(--c-yellow);
+  border: 2px solid var(--c-ink);
+  border-radius: 999px;
+  padding: 0.15rem 0.625rem;
+  box-shadow: 2px 2px 0 var(--c-ink);
+  font-size: 0.8125rem;
+}
+
+.wall-date {
+  font-family: "Caveat", cursive;
+  font-size: 1rem;
+  color: var(--c-purple);
+  font-weight: 700;
 }
 
 .wall-state {
@@ -88,33 +124,48 @@
 }
 
 .wall-state h2 {
-  font-size: 1.5rem;
-  color: #1f2937;
+  font-family: "Archivo Black", sans-serif;
+  font-size: 2rem;
+  color: var(--c-ink);
+  text-transform: lowercase;
 }
 
 .wall-state p {
-  color: #6b7280;
+  color: var(--c-ink-soft);
+  font-weight: 500;
+  font-size: 1.0625rem;
 }
 
 .wall-error {
-  color: #dc2626;
+  color: var(--c-pink);
+  font-weight: 700;
 }
 
 .wall-link-btn {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  padding: 0.625rem 1.25rem;
-  border-radius: 9999px;
+  background: var(--c-pink);
+  color: var(--c-paper);
+  padding: 0.75rem 1.25rem;
+  border: var(--border);
+  border-radius: 999px;
   text-decoration: none;
-  font-weight: 500;
-  font-size: 0.875rem;
+  font-weight: 800;
+  font-size: 0.95rem;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.12s, box-shadow 0.12s;
+  text-transform: lowercase;
+}
+
+.wall-link-btn:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: var(--shadow-md);
+  color: var(--c-paper);
 }
 
 .wall-spinner {
-  width: 40px;
-  height: 40px;
-  border: 4px solid #e5e7eb;
-  border-top-color: #667eea;
+  width: 50px;
+  height: 50px;
+  border: 4px solid var(--c-bg-2);
+  border-top-color: var(--c-pink);
   border-radius: 50%;
   animation: wall-spin 0.9s linear infinite;
 }
@@ -127,10 +178,10 @@
 
 @media (max-width: 640px) {
   .wall-container {
-    padding: 1rem;
+    padding: 1rem 0.5rem;
   }
   .wall-header h2 {
-    font-size: 1.5rem;
+    font-size: 1.75rem;
   }
   .wall-grid {
     grid-template-columns: 1fr;

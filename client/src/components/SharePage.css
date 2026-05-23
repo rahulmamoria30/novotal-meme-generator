@@ -1,60 +1,71 @@
 .share-page {
   min-height: 100vh;
-  padding: 1rem;
+  padding: 1.5rem 1rem;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+  justify-content: flex-start;
 }
 
 .share-page.loading,
 .share-page.error {
   text-align: center;
+  justify-content: center;
 }
 
 .share-page.error h2 {
+  font-family: "Archivo Black", sans-serif;
   font-size: 3rem;
   margin-bottom: 1rem;
 }
 
+.share-page.error p {
+  font-size: 1.125rem;
+  margin-bottom: 1.5rem;
+  font-weight: 600;
+}
+
 .share-content {
-  max-width: 500px;
+  max-width: 540px;
   width: 100%;
-  background: white;
-  border-radius: 1.5rem;
+  background: var(--c-paper);
+  border: var(--border);
+  border-radius: var(--radius);
   overflow: hidden;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-lg);
 }
 
 .meme-display {
-  background: #e2e8f0;
-  padding: 0.5rem;
-  border-bottom: 1px solid #e5e7eb;
+  background: var(--c-bg-2);
+  padding: 0.625rem;
+  border-bottom: var(--border);
 }
 
 .meme-image {
   width: 100%;
   display: block;
-  border-radius: 0.5rem;
+  border: 2px solid var(--c-ink);
+  border-radius: 10px;
 }
 
 .reactions-section {
-  padding: 1.5rem;
-  border-bottom: 1px solid #e5e7eb;
+  padding: 1.25rem 1rem;
+  border-bottom: 2px dashed var(--c-ink);
 }
 
 .reactions-section h3 {
-  font-size: 1rem;
-  color: #6b7280;
+  font-family: "Archivo Black", sans-serif;
+  font-size: 1.125rem;
+  color: var(--c-ink);
   margin-bottom: 1rem;
   text-align: center;
+  text-transform: lowercase;
 }
 
 .reaction-buttons {
   display: flex;
   justify-content: center;
-  gap: 0.75rem;
+  gap: 0.5rem;
   flex-wrap: wrap;
 }
 
@@ -62,24 +73,26 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 0.75rem 1rem;
-  border: 2px solid #e5e7eb;
-  border-radius: 1rem;
-  background: white;
+  padding: 0.5rem 0.75rem;
+  border: 2px solid var(--c-ink);
+  border-radius: 12px;
+  background: var(--c-paper);
   cursor: pointer;
-  transition: all 0.2s ease;
-  min-width: 60px;
+  transition: transform 0.15s ease, box-shadow 0.15s, background 0.15s;
+  min-width: 56px;
+  box-shadow: 2px 2px 0 var(--c-ink);
+  font-family: inherit;
 }
 
 .reaction-btn:hover {
-  transform: scale(1.1);
-  border-color: #667eea;
+  transform: translate(-2px, -2px) scale(1.05);
+  box-shadow: 4px 4px 0 var(--c-ink);
+  background: var(--c-yellow);
 }
 
 .reaction-btn.active {
-  background: #f3f4ff;
-  border-color: #667eea;
-  transform: scale(1.05);
+  background: var(--c-lime);
+  transform: translate(-2px, -2px);
 }
 
 .reaction-emoji {
@@ -89,94 +102,101 @@
 
 .reaction-count {
   font-size: 0.875rem;
-  font-weight: 600;
-  color: #6b7280;
+  font-weight: 800;
+  color: var(--c-ink);
   margin-top: 0.25rem;
 }
 
 .reaction-total {
   text-align: center;
   margin-top: 1rem;
-  font-size: 0.875rem;
-  color: #9ca3af;
+  font-family: "Caveat", cursive;
+  font-size: 1.125rem;
+  color: var(--c-purple);
+  font-weight: 700;
 }
 
 .share-section {
-  padding: 1.5rem;
+  padding: 1.25rem 1rem;
 }
 
 .share-section h3 {
-  font-size: 1rem;
-  color: #6b7280;
+  font-family: "Archivo Black", sans-serif;
+  font-size: 1.125rem;
+  color: var(--c-ink);
   margin-bottom: 1rem;
   text-align: center;
+  text-transform: lowercase;
 }
 
 .share-buttons {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 0.75rem;
+  gap: 0.625rem;
 }
 
 .share-btn {
-  padding: 0.75rem 1rem;
-  border-radius: 0.75rem;
-  font-weight: 600;
+  padding: 0.625rem 0.875rem;
+  border: 2px solid var(--c-ink);
+  border-radius: 12px;
+  font-weight: 700;
   font-size: 0.875rem;
   cursor: pointer;
-  transition: all 0.2s;
-  border: none;
+  transition: transform 0.12s, box-shadow 0.12s;
+  box-shadow: 2px 2px 0 var(--c-ink);
+  font-family: inherit;
+  text-transform: lowercase;
+}
+
+.share-btn:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 4px 4px 0 var(--c-ink);
 }
 
 .share-btn.copy {
-  background: #f3f4f6;
-  color: #374151;
+  background: var(--c-yellow);
+  color: var(--c-ink);
   grid-column: span 2;
 }
 
-.share-btn.copy:hover {
-  background: #e5e7eb;
-}
-
 .share-btn.twitter {
-  background: #1da1f2;
-  color: white;
+  background: var(--c-ink);
+  color: var(--c-paper);
 }
 
 .share-btn.facebook {
-  background: #4267b2;
-  color: white;
+  background: var(--c-cyan);
+  color: var(--c-ink);
 }
 
 .share-btn.whatsapp {
   background: #25d366;
-  color: white;
+  color: var(--c-ink);
   grid-column: span 2;
 }
 
-.share-btn:hover {
-  transform: scale(1.02);
-}
-
 .btn-create {
-  width: calc(100% - 3rem);
-  margin: 1.5rem;
-  padding: 1rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  border: none;
-  border-radius: 1rem;
-  font-size: 1.125rem;
-  font-weight: 600;
+  width: calc(100% - 2rem);
+  margin: 1.25rem 1rem;
+  padding: 0.875rem;
+  background: var(--c-pink);
+  color: var(--c-paper);
+  border: var(--border);
+  border-radius: 14px;
+  font-size: 1.0625rem;
+  font-weight: 800;
   cursor: pointer;
-  transition: transform 0.2s;
+  box-shadow: var(--shadow-md);
+  transition: transform 0.12s, box-shadow 0.12s;
+  font-family: inherit;
+  text-transform: lowercase;
 }
 
 .btn-create:hover {
-  transform: scale(1.02);
+  transform: translate(-2px, -2px);
+  box-shadow: var(--shadow-lg);
 }
 
-/* Floating reaction animation */
 .floating-reaction {
   position: fixed;
   top: 50%;
@@ -191,22 +211,21 @@
 @keyframes float-up {
   0% {
     opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
+    transform: translate(-50%, -50%) scale(1) rotate(-15deg);
   }
   100% {
     opacity: 0;
-    transform: translate(-50%, -150%) scale(2);
+    transform: translate(-50%, -150%) scale(2) rotate(20deg);
   }
 }
 
-/* Spinner */
 .spinner {
-  width: 50px;
-  height: 50px;
-  border: 4px solid #e5e7eb;
-  border-top-color: #667eea;
+  width: 54px;
+  height: 54px;
+  border: 4px solid var(--c-bg-2);
+  border-top-color: var(--c-pink);
   border-radius: 50%;
-  animation: spin 1s linear infinite;
+  animation: spin 0.9s linear infinite;
   margin: 0 auto 1rem;
 }
 
@@ -216,34 +235,26 @@
   }
 }
 
-/* Mobile responsive */
 @media (max-width: 640px) {
   .share-page {
-    padding: 0.5rem;
-    justify-content: flex-start;
-    padding-top: 1rem;
+    padding: 1rem 0.5rem;
   }
-
   .share-content {
-    border-radius: 1rem;
+    border-radius: 14px;
   }
-
   .reactions-section,
   .share-section {
-    padding: 1rem;
+    padding: 1rem 0.75rem;
   }
-
   .reaction-btn {
-    padding: 0.5rem 0.75rem;
-    min-width: 50px;
+    padding: 0.4rem 0.625rem;
+    min-width: 48px;
   }
-
   .reaction-emoji {
     font-size: 1.5rem;
   }
-
   .btn-create {
-    margin: 1rem;
-    width: calc(100% - 2rem);
+    margin: 1rem 0.75rem;
+    width: calc(100% - 1.5rem);
   }
 }

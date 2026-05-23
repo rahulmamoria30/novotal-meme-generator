@@ -34,9 +34,9 @@ CRITICAL: The user has provided their own text/idea! Your job is to:
 `
     instructions = `
 REQUIREMENTS FOR USER-PROVIDED TEXT:
-- Suggestion 1-2: Use their EXACT text (or very close) as the main caption, add complementary text
-- Suggestion 3-4: Enhance/remix their text to make it funnier (keep the spirit)
-- Suggestion 5-6: Creative variations inspired by their theme
+- Suggestions 1-2: Use their EXACT text (or very close) as the main caption, add complementary text
+- Suggestions 3-4: Enhance/remix their text to make it funnier (keep the spirit)
+- Suggestions 5-6: Creative variations inspired by their theme
 
 The user's text MUST be recognizable in at least 4 of the 6 suggestions!
 `
@@ -47,7 +47,7 @@ Use internet humor, cultural references, and relatable situations.
 `
   }
 
-  const prompt = `You are a meme expert and comedy writer. Analyze this image and create 6 meme suggestions.
+  const prompt = `You are a meme expert and comedy writer. Analyze this image and create exactly 6 meme suggestions.
 ${userContext}
 Available meme templates:
 ${templateDescriptions}
@@ -75,7 +75,9 @@ Respond with JSON:
   ]
 }
 
-Use DIFFERENT templates and humor styles. Be creative and make people laugh!`
+CRITICAL: You MUST return exactly 6 suggestions. Pick 6 different templates from the list above (no repeats), and vary the humor style across them. Be creative and make people laugh.
+
+Also keep captions SHORT (under 8 words per line) so they stay readable on small previews.`
 
   if (!process.env.OPENROUTER_API_KEY) {
     throw new Error("OPENROUTER_API_KEY is not configured on the server")

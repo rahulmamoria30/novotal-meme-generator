@@ -13,6 +13,7 @@ const ImageUpload = () => {
     setLoadingSuggestions,
     setSuggestionsError,
     setUserPrompt,
+    sessionId,
   } = useMemeStore()
   const [isUploading, setIsUploading] = useState(false)
   const [error, setError] = useState(null)
@@ -37,13 +38,14 @@ const ImageUpload = () => {
         if (setUserPrompt) setUserPrompt(userText)
 
         try {
-          const suggestions = await getSuggestions(
+          const { suggestions, draftId } = await getSuggestions(
             imageUrl,
             base64,
             file.type,
-            userText
+            userText,
+            sessionId
           )
-          setSuggestions(suggestions)
+          setSuggestions(suggestions, draftId)
         } catch (err) {
           console.error("Error getting suggestions:", err)
           setSuggestionsError(err.message)
@@ -117,17 +119,38 @@ const ImageUpload = () => {
   }, [])
 
   const startWebcam = async () => {
+    if (!navigator.mediaDevices?.getUserMedia) {
+      setError("Webcam not supported on this browser")
+      return
+    }
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: "user", width: 1280, height: 720 },
+        audio: false,
       })
       streamRef.current = stream
-      if (videoRef.current) videoRef.current.srcObject = stream
       setShowWebcam(true)
     } catch (err) {
-      setError("Could not access webcam")
+      console.error("Webcam error:", err.name, err.message)
+      const messages = {
+        NotAllowedError: "Camera permission denied — allow it in your browser",
+        NotFoundError: "No camera found on this device",
+        NotReadableError: "Camera is busy — close other apps using it",
+        OverconstrainedError: "Camera doesn't support the requested mode",
+        SecurityError: "Camera needs https or localhost",
+      }
+      setError(messages[err.name] || `Could not access webcam (${err.name})`)
     }
   }
+
+  // Attach the stream to the <video> once the modal has mounted.
+  // Setting srcObject before the element exists is the original bug.
+  React.useEffect(() => {
+    if (showWebcam && videoRef.current && streamRef.current) {
+      videoRef.current.srcObject = streamRef.current
+      videoRef.current.play?.().catch(() => {})
+    }
+  }, [showWebcam])
 
   const capturePhoto = () => {
     if (!videoRef.current) return
@@ -183,10 +206,10 @@ const ImageUpload = () => {
           />
           <div className="webcam-actions">
             <button onClick={capturePhoto} className="webcam-btn capture">
-              <span>📸</span> Take Photo
+              <span>📸</span> snap it
             </button>
             <button onClick={stopWebcam} className="webcam-btn cancel">
-              Cancel
+              close it
             </button>
           </div>
         </div>
@@ -202,8 +225,8 @@ const ImageUpload = () => {
       {isDragActive && (
         <div className="drag-overlay">
           <div className="drag-content">
-            <span className="drag-icon">📷</span>
-            <p>Drop your image here</p>
+            <span className="drag-icon">🫳</span>
+            <p>let it gooo</p>
           </div>
         </div>
       )}
@@ -213,29 +236,30 @@ const ImageUpload = () => {
         {!selectedImage ? (
           // Empty state
           <div className="empty-state">
-            <div className="empty-icon">🎭</div>
-            <h1>Create a Meme</h1>
+            <div className="empty-icon">🫠</div>
+            <span className="empty-kicker">drop the pic, claim the bag</span>
+            <h1>cook a meme<span className="empty-dot">.</span></h1>
             <p>
-              Upload an image, add your text, and AI will turn it into a
-              hilarious meme
+              upload a pic, type your hot take, and the ai chefs up your{" "}
+              <strong>6 menu options</strong> ready to ratio the timeline.
             </p>
 
             <div className="quick-actions">
               <button onClick={open} className="action-card">
                 <span className="action-icon">📤</span>
-                <span className="action-label">Upload Image</span>
+                <span className="action-label">upload</span>
               </button>
               <button onClick={startWebcam} className="action-card">
-                <span className="action-icon">📷</span>
-                <span className="action-label">Take Photo</span>
+                <span className="action-icon">🤳</span>
+                <span className="action-label">selfie cam</span>
               </button>
-              <button
-                onClick={() => textareaRef.current?.focus()}
-                className="action-card"
-              >
-                <span className="action-icon">📋</span>
-                <span className="action-label">Paste Image</span>
-              </button>
+              
+            </div>
+
+            <div className="empty-stickers">
+              <span className="sticker sticker-1">no cap</span>
+              <span className="sticker sticker-2">fr fr</span>
+              <span className="sticker sticker-3">bussin</span>
             </div>
           </div>
         ) : (
@@ -297,8 +321,8 @@ const ImageUpload = () => {
               onKeyDown={handleKeyDown}
               placeholder={
                 selectedImage
-                  ? "Type your meme text here... AI will enhance it!"
-                  : "Upload an image to get started..."
+                  ? "spill the tea... ai will spice it up ✨"
+                  : "drop a pic first bestie..."
               }
               rows={1}
               className="gpt-textarea"
@@ -330,8 +354,8 @@ const ImageUpload = () => {
 
         <p className="input-hint">
           {selectedImage
-            ? "Your text becomes the meme caption • AI will make it funnier"
-            : "Drag & drop, paste (Ctrl+V), or click to upload an image"}
+            ? "smash enter, let the ai cook"
+            : "drag · drop · paste · ctrl+v · whatever, just feed me"}
         </p>
       </div>
 

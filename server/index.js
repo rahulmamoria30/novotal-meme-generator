@@ -16,12 +16,16 @@ const { getAllTemplates, getTemplateById } = require("./utils/templates")
 const { generateMemeSuggestions } = require("./utils/ai")
 const {
   saveMeme,
+  saveDraft,
   getMeme,
   getAllMemes,
+  getMemesBySession,
   addReaction,
   removeReaction,
   getReactionCounts,
   getTopMemes,
+  logRequest,
+  getRequestLog,
 } = require("./utils/storage")
 
 const app = express()
@@ -81,6 +85,51 @@ app.use(
 )
 app.use(express.json({ limit: "50mb" }))
 app.use(express.urlencoded({ extended: true, limit: "50mb" }))
+
+// Request audit log — records every API call into SQLite after the response is sent.
+// Skips static uploads and Socket.io handshakes to keep the log signal-heavy.
+app.use((req, res, next) => {
+  const start = process.hrtime.bigint()
+  const skip =
+    req.path.startsWith("/uploads") ||
+    req.path.startsWith("/socket.io") ||
+    req.path === "/favicon.ico"
+
+  if (skip) return next()
+
+  res.on("finish", () => {
+    const durationMs = Number(
+      (process.hrtime.bigint() - start) / 1000000n
+    )
+
+    // Extract sessionId from common places (request body, params, query) without
+    // logging the full body — uploads contain large base64 payloads.
+    const sessionId =
+      req.body?.sessionId ||
+      req.body?.creatorSessionId ||
+      req.params?.sessionId ||
+      req.query?.sessionId ||
+      null
+
+    const contentLength = parseInt(req.headers["content-length"]) || 0
+    const responseLength = parseInt(res.getHeader("content-length")) || 0
+
+    logRequest({
+      method: req.method,
+      path: req.originalUrl.split("?")[0],
+      status: res.statusCode,
+      durationMs,
+      sessionId,
+      ip: req.ip,
+      userAgent: req.headers["user-agent"] || null,
+      bytesIn: contentLength,
+      bytesOut: responseLength,
+    })
+  })
+
+  next()
+})
+
 app.use("/uploads", express.static(uploadsDir))
 
 // ============ ROUTES ============
@@ -95,6 +144,14 @@ app.get("/", (req, res) => {
 
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() })
+})
+
+// Audit log inspection (server-only; use ?sessionId=... to filter)
+app.get("/api/admin/log", (req, res) => {
+  const { sessionId } = req.query
+  const limit = parseInt(req.query.limit) || 100
+  const entries = getRequestLog({ sessionId, limit })
+  res.json({ entries })
 })
 
 // ============ TEMPLATE ROUTES ============
@@ -198,9 +255,25 @@ app.post("/api/suggest", async (req, res) => {
       userPrompt
     )
 
+    // Persist a draft for the user's history — every successful suggest is a
+    // meme request, even if they never share it.
+    let draftId = null
+    const { creatorSessionId } = req.body
+    if (imageUrl && creatorSessionId) {
+      draftId = nanoid(10)
+      saveDraft({
+        id: draftId,
+        imageUrl,
+        suggestions,
+        creatorSessionId,
+        userPrompt,
+      })
+    }
+
     res.json({
       success: true,
       suggestions,
+      draftId,
     })
   } catch (error) {
     console.error("Error generating suggestions:", error)
@@ -216,10 +289,17 @@ app.post("/api/suggest", async (req, res) => {
 // Save a created meme
 app.post("/api/memes", (req, res) => {
   try {
-    const { imageUrl, imageBase64, templateId, texts, creatorSessionId } =
-      req.body
+    const {
+      imageUrl,
+      imageBase64,
+      templateId,
+      texts,
+      creatorSessionId,
+      draftId,
+    } = req.body
 
-    const memeId = nanoid(10)
+    // If we're upgrading a draft, reuse its id so the share URL stays stable.
+    const memeId = draftId || nanoid(10)
 
     // If base64 image provided, save it
     let finalImageUrl = imageUrl
@@ -237,6 +317,7 @@ app.post("/api/memes", (req, res) => {
       templateId,
       texts,
       creatorSessionId,
+      draftId,
     })
 
     res.json({
@@ -263,6 +344,17 @@ app.get("/api/memes/:id", (req, res) => {
 app.get("/api/memes", (req, res) => {
   const limit = parseInt(req.query.limit) || 50
   const memes = getAllMemes(limit)
+  res.json({ memes })
+})
+
+// Get memes created by a session (user history)
+app.get("/api/memes/by-session/:sessionId", (req, res) => {
+  const { sessionId } = req.params
+  if (!sessionId) {
+    return res.status(400).json({ error: "Missing sessionId" })
+  }
+  const limit = parseInt(req.query.limit) || 50
+  const memes = getMemesBySession(sessionId, limit)
   res.json({ memes })
 })
 

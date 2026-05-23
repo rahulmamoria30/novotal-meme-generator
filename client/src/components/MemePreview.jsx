@@ -55,15 +55,17 @@ const MemePreview = ({
   const renderText = (text, position, isTop = true) => {
     if (!text) return null
 
-    // Scale font with width, with a readable floor
-    const scaledFontSize = (position?.fontSize || 48) * (dimensions.width / 450)
-    let fontSize = Math.max(scaledFontSize, 20)
+    // Scale font with width — kept intentionally small so captions don't
+    // dominate the image on either previews or the edit canvas.
+    const scaledFontSize = (position?.fontSize || 48) * (dimensions.width / 560)
+    const floor = dimensions.width < 220 ? 13 : 15
+    let fontSize = Math.max(scaledFontSize, floor)
 
-    // Each text block can use at most 40% of the canvas height — guarantees both
-    // top and bottom captions stay inside the image without overlapping
-    const maxBlockHeight = dimensions.height * 0.4
-    const lineHeight = 1.2
-    const verticalPadding = 16
+    // Each text block can use up to 35% of the canvas height — leaves more
+    // room for the image, since text is smaller now.
+    const maxBlockHeight = dimensions.height * 0.35
+    const lineHeight = 1.15
+    const verticalPadding = 10
 
     // Estimate lines at current font size; if it overflows the cap, shrink to fit
     const estimateLines = (size) => {
@@ -77,7 +79,7 @@ const MemePreview = ({
     if (blockHeight > maxBlockHeight) {
       // Shrink font until block fits, with a hard floor so it stays legible
       const scale = maxBlockHeight / blockHeight
-      fontSize = Math.max(14, fontSize * scale)
+      fontSize = Math.max(11, fontSize * scale)
       lines = estimateLines(fontSize)
       blockHeight = Math.min(
         maxBlockHeight,
@@ -96,7 +98,7 @@ const MemePreview = ({
           y={y}
           width={dimensions.width - padding}
           height={blockHeight}
-          fill="rgba(0, 0, 0, 0.65)"
+          fill="rgba(0, 0, 0, 0.72)"
           cornerRadius={8}
         />
         <Text
