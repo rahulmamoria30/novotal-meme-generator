@@ -33,7 +33,9 @@ const server = http.createServer(app)
 
 // Allowed CORS origins — comma-separated CLIENT_URL on the host (e.g. Render)
 // lets prod and local dev share one config. Empty origin (curl, same-origin) is allowed.
-const allowedOrigins = (process.env.CLIENT_URL || "http://localhost:5173")
+const DEFAULT_ORIGINS =
+  "https://novotal-meme-generator.vercel.app,http://localhost:5173"
+const allowedOrigins = (process.env.CLIENT_URL || DEFAULT_ORIGINS)
   .split(",")
   .map((s) => s.trim())
   .filter(Boolean)
