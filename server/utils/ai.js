@@ -1,4 +1,40 @@
 const { memeTemplates } = require("./templates")
+
+// Best-effort JSON extraction: handles raw JSON, markdown ```json fences,
+// and stray prose around a JSON object. Returns the parsed object or null.
+function extractJson(text) {
+  if (!text || typeof text !== "string") return null
+
+  const tryParse = (s) => {
+    try {
+      return JSON.parse(s)
+    } catch {
+      return null
+    }
+  }
+
+  // 1. Direct parse
+  let result = tryParse(text.trim())
+  if (result) return result
+
+  // 2. Strip markdown code fences (```json ... ``` or ``` ... ```)
+  const fenceMatch = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/i)
+  if (fenceMatch) {
+    result = tryParse(fenceMatch[1].trim())
+    if (result) return result
+  }
+
+  // 3. Grab the first {...} balanced-ish block
+  const first = text.indexOf("{")
+  const last = text.lastIndexOf("}")
+  if (first !== -1 && last > first) {
+    result = tryParse(text.slice(first, last + 1))
+    if (result) return result
+  }
+
+  return null
+}
+
 // AI utility to analyze an image and generate meme caption suggestions using OpenRouter API and a set of predefined templates.
 /**
  * Analyze image and generate meme suggestions using OpenRouter API
@@ -117,6 +153,7 @@ Also keep captions SHORT (under 8 words per line) so they stay readable on small
           },
         ],
         max_tokens: 2000,
+        response_format: { type: "json_object" },
       }),
     }
   )
@@ -144,12 +181,11 @@ Also keep captions SHORT (under 8 words per line) so they stay readable on small
     throw new Error("LLM returned an empty response")
   }
 
-  const jsonMatch = content.match(/\{[\s\S]*\}/)
-  if (!jsonMatch) {
+  const parsed = extractJson(content)
+  if (!parsed) {
+    console.error("Could not parse JSON from AI response. Raw content:", content)
     throw new Error("Failed to parse meme suggestions from AI response")
   }
-
-  const parsed = JSON.parse(jsonMatch[0])
   if (!Array.isArray(parsed.suggestions) || parsed.suggestions.length === 0) {
     throw new Error("LLM returned no meme suggestions")
   }
