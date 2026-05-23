@@ -31,11 +31,24 @@ const {
 const app = express()
 const server = http.createServer(app)
 
+// Allowed CORS origins — comma-separated CLIENT_URL on the host (e.g. Render)
+// lets prod and local dev share one config. Empty origin (curl, same-origin) is allowed.
+const allowedOrigins = (process.env.CLIENT_URL || "http://localhost:5173")
+  .split(",")
+  .map((s) => s.trim())
+  .filter(Boolean)
+
+const corsOriginCheck = (origin, callback) => {
+  if (!origin || allowedOrigins.includes(origin)) return callback(null, true)
+  callback(new Error(`Origin ${origin} not allowed by CORS`))
+}
+
 // Socket.io setup for real-time reactions
 const io = new Server(server, {
   cors: {
-    origin: process.env.CLIENT_URL || "http://localhost:5173",
+    origin: corsOriginCheck,
     methods: ["GET", "POST"],
+    credentials: true,
   },
 })
 
@@ -79,7 +92,7 @@ const upload = multer({
 // Middleware
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || "http://localhost:5173",
+    origin: corsOriginCheck,
     credentials: true,
   })
 )
