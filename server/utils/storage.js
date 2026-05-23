@@ -1,326 +1,179 @@
-const fs = require("fs")
-const path = require("path")
-const Database = require("better-sqlite3")
+// In-memory storage for memes, reactions, and request logs.
+// Data is non-persistent across process restarts — fine for ephemeral
+// serverless deployments (Vercel) where the filesystem isn't durable.
 
-const DATA_DIR = path.join(__dirname, "../data")
-const DB_FILE = path.join(DATA_DIR, "memes.db")
-const LEGACY_JSON = path.join(DATA_DIR, "memes.json")
-
-if (!fs.existsSync(DATA_DIR)) {
-  fs.mkdirSync(DATA_DIR, { recursive: true })
-}
-
-const db = new Database(DB_FILE)
-db.pragma("journal_mode = WAL")
-db.pragma("foreign_keys = ON")
-
-db.exec(`
-  CREATE TABLE IF NOT EXISTS memes (
-    id TEXT PRIMARY KEY,
-    image_url TEXT NOT NULL,
-    template_id TEXT,
-    texts TEXT,
-    creator_session_id TEXT,
-    created_at TEXT NOT NULL,
-    status TEXT NOT NULL DEFAULT 'shared',
-    suggestions TEXT,
-    user_prompt TEXT
-  );
-  CREATE INDEX IF NOT EXISTS idx_memes_created_at ON memes(created_at DESC);
-  CREATE INDEX IF NOT EXISTS idx_memes_creator ON memes(creator_session_id);
-
-  CREATE TABLE IF NOT EXISTS reactions (
-    meme_id TEXT NOT NULL,
-    reaction_type TEXT NOT NULL,
-    session_id TEXT NOT NULL,
-    created_at TEXT NOT NULL,
-    PRIMARY KEY (meme_id, reaction_type, session_id),
-    FOREIGN KEY (meme_id) REFERENCES memes(id) ON DELETE CASCADE
-  );
-  CREATE INDEX IF NOT EXISTS idx_reactions_meme ON reactions(meme_id);
-
-  CREATE TABLE IF NOT EXISTS request_log (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    method TEXT NOT NULL,
-    path TEXT NOT NULL,
-    status INTEGER,
-    duration_ms INTEGER,
-    session_id TEXT,
-    ip TEXT,
-    user_agent TEXT,
-    bytes_in INTEGER,
-    bytes_out INTEGER,
-    created_at TEXT NOT NULL
-  );
-  CREATE INDEX IF NOT EXISTS idx_log_created_at ON request_log(created_at DESC);
-  CREATE INDEX IF NOT EXISTS idx_log_session ON request_log(session_id);
-  CREATE INDEX IF NOT EXISTS idx_log_path ON request_log(path);
-`)
-
-// Column-level migrations for older databases (CREATE TABLE IF NOT EXISTS
-// won't add new columns to an existing table)
-function ensureColumn(table, column, definition) {
-  const cols = db.prepare(`PRAGMA table_info(${table})`).all()
-  if (!cols.find((c) => c.name === column)) {
-    db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`)
-  }
-}
-ensureColumn("memes", "status", "TEXT NOT NULL DEFAULT 'shared'")
-ensureColumn("memes", "suggestions", "TEXT")
-ensureColumn("memes", "user_prompt", "TEXT")
-
-// Indexes that depend on migrated columns
-db.exec(
-  "CREATE INDEX IF NOT EXISTS idx_memes_status ON memes(status)"
-)
-
-// One-time migration: import legacy JSON if SQLite is empty and JSON exists
-;(function migrateFromJson() {
-  const memeCount = db.prepare("SELECT COUNT(*) AS c FROM memes").get().c
-  if (memeCount > 0 || !fs.existsSync(LEGACY_JSON)) return
-
-  try {
-    const raw = fs.readFileSync(LEGACY_JSON, "utf8")
-    const legacy = JSON.parse(raw)
-    const memes = legacy.memes || {}
-
-    const insertMeme = db.prepare(`
-      INSERT INTO memes (id, image_url, template_id, texts, creator_session_id, created_at)
-      VALUES (@id, @image_url, @template_id, @texts, @creator_session_id, @created_at)
-    `)
-    const insertReaction = db.prepare(`
-      INSERT OR IGNORE INTO reactions (meme_id, reaction_type, session_id, created_at)
-      VALUES (?, ?, ?, ?)
-    `)
-
-    const migrate = db.transaction(() => {
-      for (const meme of Object.values(memes)) {
-        insertMeme.run({
-          id: meme.id,
-          image_url: meme.imageUrl || "",
-          template_id: meme.templateId || null,
-          texts: JSON.stringify(meme.texts || {}),
-          creator_session_id: meme.creatorSessionId || null,
-          created_at: meme.createdAt || new Date().toISOString(),
-        })
-
-        const reactions = meme.reactions || {}
-        const createdAt = meme.createdAt || new Date().toISOString()
-        for (const [type, sessions] of Object.entries(reactions)) {
-          if (!Array.isArray(sessions)) continue
-          for (const sid of sessions) {
-            insertReaction.run(meme.id, type, sid, createdAt)
-          }
-        }
-      }
-    })
-
-    migrate()
-    fs.renameSync(LEGACY_JSON, `${LEGACY_JSON}.migrated`)
-    console.log(
-      `[storage] Migrated ${Object.keys(memes).length} memes from memes.json to SQLite`
-    )
-  } catch (err) {
-    console.error("[storage] Migration failed:", err.message)
-  }
-})()
-
-// Row mappers
-function rowToMeme(row) {
-  if (!row) return null
-  return {
-    id: row.id,
-    imageUrl: row.image_url,
-    templateId: row.template_id,
-    texts: row.texts ? JSON.parse(row.texts) : {},
-    creatorSessionId: row.creator_session_id,
-    createdAt: row.created_at,
-    status: row.status || "shared",
-    suggestions: row.suggestions ? JSON.parse(row.suggestions) : null,
-    userPrompt: row.user_prompt || "",
-    reactions: getReactionsBySessionList(row.id),
-  }
-}
+const memes = new Map() // id -> meme record
+const reactions = new Map() // memeId -> Map(reactionType -> Set(sessionId))
+const requestLogEntries = [] // newest entries pushed to the front
+const REQUEST_LOG_CAP = 1000
 
 function getReactionsBySessionList(memeId) {
-  const rows = db
-    .prepare(
-      "SELECT reaction_type, session_id FROM reactions WHERE meme_id = ?"
-    )
-    .all(memeId)
   const out = {}
-  for (const r of rows) {
-    if (!out[r.reaction_type]) out[r.reaction_type] = []
-    out[r.reaction_type].push(r.session_id)
+  const byType = reactions.get(memeId)
+  if (!byType) return out
+  for (const [type, sessions] of byType.entries()) {
+    out[type] = Array.from(sessions)
   }
   return out
 }
 
+function toMeme(record) {
+  if (!record) return null
+  return {
+    id: record.id,
+    imageUrl: record.imageUrl,
+    templateId: record.templateId || null,
+    texts: record.texts || {},
+    creatorSessionId: record.creatorSessionId || null,
+    createdAt: record.createdAt,
+    status: record.status || "shared",
+    suggestions: record.suggestions || null,
+    userPrompt: record.userPrompt || "",
+    reactions: getReactionsBySessionList(record.id),
+  }
+}
+
 // Save a shared meme. If draftId is provided, upgrade the existing draft row
-// to status='shared' with the final template + texts. Otherwise insert new.
+// to status='shared' with the final template + texts.
 function saveMeme(meme) {
   const draftId = meme.draftId || null
-  const existing = draftId
-    ? db.prepare("SELECT id FROM memes WHERE id = ?").get(draftId)
-    : null
+  const existing = draftId ? memes.get(draftId) : null
 
   if (existing) {
-    db.prepare(
-      `UPDATE memes
-       SET image_url = @image_url,
-           template_id = @template_id,
-           texts = @texts,
-           status = 'shared'
-       WHERE id = @id`
-    ).run({
-      id: draftId,
-      image_url: meme.imageUrl,
-      template_id: meme.templateId || null,
-      texts: JSON.stringify(meme.texts || {}),
-    })
-    return getMeme(draftId)
+    existing.imageUrl = meme.imageUrl
+    existing.templateId = meme.templateId || null
+    existing.texts = meme.texts || {}
+    existing.status = "shared"
+    return toMeme(existing)
   }
 
-  db.prepare(
-    `INSERT INTO memes (id, image_url, template_id, texts, creator_session_id, created_at, status)
-     VALUES (@id, @image_url, @template_id, @texts, @creator_session_id, @created_at, 'shared')`
-  ).run({
+  const record = {
     id: meme.id,
-    image_url: meme.imageUrl,
-    template_id: meme.templateId || null,
-    texts: JSON.stringify(meme.texts || {}),
-    creator_session_id: meme.creatorSessionId || null,
-    created_at: new Date().toISOString(),
-  })
-  return getMeme(meme.id)
+    imageUrl: meme.imageUrl,
+    templateId: meme.templateId || null,
+    texts: meme.texts || {},
+    creatorSessionId: meme.creatorSessionId || null,
+    createdAt: new Date().toISOString(),
+    status: "shared",
+    suggestions: null,
+    userPrompt: "",
+  }
+  memes.set(record.id, record)
+  return toMeme(record)
 }
 
 // Save a draft (image uploaded + AI suggestions returned, not yet shared)
 function saveDraft({ id, imageUrl, suggestions, creatorSessionId, userPrompt }) {
-  db.prepare(
-    `INSERT INTO memes (id, image_url, texts, creator_session_id, created_at, status, suggestions, user_prompt)
-     VALUES (@id, @image_url, '{}', @creator_session_id, @created_at, 'draft', @suggestions, @user_prompt)`
-  ).run({
+  const record = {
     id,
-    image_url: imageUrl,
-    creator_session_id: creatorSessionId || null,
-    created_at: new Date().toISOString(),
-    suggestions: JSON.stringify(suggestions || []),
-    user_prompt: userPrompt || "",
-  })
-  return getMeme(id)
+    imageUrl,
+    templateId: null,
+    texts: {},
+    creatorSessionId: creatorSessionId || null,
+    createdAt: new Date().toISOString(),
+    status: "draft",
+    suggestions: suggestions || [],
+    userPrompt: userPrompt || "",
+  }
+  memes.set(id, record)
+  return toMeme(record)
 }
 
-// Get a meme by ID
 function getMeme(id) {
-  const row = db.prepare("SELECT * FROM memes WHERE id = ?").get(id)
-  return rowToMeme(row)
+  return toMeme(memes.get(id))
 }
 
-// Get all memes for the global wall — public, so drafts are excluded.
+// Sorted by createdAt DESC
+function sortedMemes() {
+  return Array.from(memes.values()).sort((a, b) =>
+    b.createdAt.localeCompare(a.createdAt)
+  )
+}
+
 function getAllMemes(limit = 50) {
-  const rows = db
-    .prepare(
-      `SELECT * FROM memes
-       WHERE status = 'shared'
-       ORDER BY created_at DESC
-       LIMIT ?`
-    )
-    .all(limit)
-  return rows.map(rowToMeme)
+  return sortedMemes()
+    .filter((m) => m.status === "shared")
+    .slice(0, limit)
+    .map(toMeme)
 }
 
-// Get memes created by a given session (history)
 function getMemesBySession(sessionId, limit = 100) {
   if (!sessionId) return []
-  const rows = db
-    .prepare(
-      `SELECT * FROM memes
-       WHERE creator_session_id = ?
-       ORDER BY created_at DESC
-       LIMIT ?`
-    )
-    .all(sessionId, limit)
-  return rows.map(rowToMeme)
+  return sortedMemes()
+    .filter((m) => m.creatorSessionId === sessionId)
+    .slice(0, limit)
+    .map(toMeme)
 }
 
-// Add reaction
 function addReaction(memeId, reactionType, sessionId) {
-  const exists = db.prepare("SELECT 1 FROM memes WHERE id = ?").get(memeId)
-  if (!exists) return null
+  if (!memes.has(memeId)) return null
 
-  db.prepare(
-    `INSERT OR IGNORE INTO reactions (meme_id, reaction_type, session_id, created_at)
-     VALUES (?, ?, ?, ?)`
-  ).run(memeId, reactionType, sessionId, new Date().toISOString())
+  let byType = reactions.get(memeId)
+  if (!byType) {
+    byType = new Map()
+    reactions.set(memeId, byType)
+  }
+  let sessions = byType.get(reactionType)
+  if (!sessions) {
+    sessions = new Set()
+    byType.set(reactionType, sessions)
+  }
+  sessions.add(sessionId)
 
   return getReactionsBySessionList(memeId)
 }
 
-// Remove reaction
 function removeReaction(memeId, reactionType, sessionId) {
-  const exists = db.prepare("SELECT 1 FROM memes WHERE id = ?").get(memeId)
-  if (!exists) return null
+  if (!memes.has(memeId)) return null
 
-  db.prepare(
-    `DELETE FROM reactions
-     WHERE meme_id = ? AND reaction_type = ? AND session_id = ?`
-  ).run(memeId, reactionType, sessionId)
+  const byType = reactions.get(memeId)
+  if (byType) {
+    const sessions = byType.get(reactionType)
+    if (sessions) {
+      sessions.delete(sessionId)
+      if (sessions.size === 0) byType.delete(reactionType)
+    }
+    if (byType.size === 0) reactions.delete(memeId)
+  }
 
   return getReactionsBySessionList(memeId)
 }
 
-// Counts (used by socket emit + GET reactions)
 function getReactionCounts(memeId) {
-  const rows = db
-    .prepare(
-      `SELECT reaction_type, COUNT(*) AS c
-       FROM reactions WHERE meme_id = ?
-       GROUP BY reaction_type`
-    )
-    .all(memeId)
   const out = {}
-  for (const r of rows) out[r.reaction_type] = r.c
+  const byType = reactions.get(memeId)
+  if (!byType) return out
+  for (const [type, sessions] of byType.entries()) {
+    out[type] = sessions.size
+  }
   return out
 }
 
-// Top memes by total reactions — only shared.
 function getTopMemes(limit = 10) {
-  const rows = db
-    .prepare(
-      `SELECT m.*, COALESCE(r.total, 0) AS total_reactions
-       FROM memes m
-       LEFT JOIN (
-         SELECT meme_id, COUNT(*) AS total
-         FROM reactions
-         GROUP BY meme_id
-       ) r ON r.meme_id = m.id
-       WHERE m.status = 'shared'
-       ORDER BY total_reactions DESC, m.created_at DESC
-       LIMIT ?`
-    )
-    .all(limit)
-  return rows.map((row) => ({
-    ...rowToMeme(row),
-    totalReactions: row.total_reactions,
-  }))
+  return sortedMemes()
+    .filter((m) => m.status === "shared")
+    .map((m) => {
+      const counts = getReactionCounts(m.id)
+      const total = Object.values(counts).reduce((s, n) => s + n, 0)
+      return { record: m, total }
+    })
+    .sort((a, b) => {
+      if (b.total !== a.total) return b.total - a.total
+      return b.record.createdAt.localeCompare(a.record.createdAt)
+    })
+    .slice(0, limit)
+    .map(({ record, total }) => ({
+      ...toMeme(record),
+      totalReactions: total,
+    }))
 }
 
 // ===== REQUEST LOG =====
 
-const insertRequestLog = db.prepare(`
-  INSERT INTO request_log (
-    method, path, status, duration_ms, session_id, ip, user_agent,
-    bytes_in, bytes_out, created_at
-  ) VALUES (
-    @method, @path, @status, @duration_ms, @session_id, @ip, @user_agent,
-    @bytes_in, @bytes_out, @created_at
-  )
-`)
-
 function logRequest(entry) {
   try {
-    insertRequestLog.run({
+    requestLogEntries.unshift({
+      id: requestLogEntries.length + 1,
       method: entry.method || "",
       path: entry.path || "",
       status: entry.status ?? null,
@@ -332,25 +185,19 @@ function logRequest(entry) {
       bytes_out: entry.bytesOut ?? null,
       created_at: new Date().toISOString(),
     })
+    if (requestLogEntries.length > REQUEST_LOG_CAP) {
+      requestLogEntries.length = REQUEST_LOG_CAP
+    }
   } catch (err) {
     console.error("[storage] failed to log request:", err.message)
   }
 }
 
 function getRequestLog({ sessionId, limit = 100 } = {}) {
-  if (sessionId) {
-    return db
-      .prepare(
-        `SELECT * FROM request_log
-         WHERE session_id = ?
-         ORDER BY id DESC
-         LIMIT ?`
-      )
-      .all(sessionId, limit)
-  }
-  return db
-    .prepare("SELECT * FROM request_log ORDER BY id DESC LIMIT ?")
-    .all(limit)
+  const filtered = sessionId
+    ? requestLogEntries.filter((e) => e.session_id === sessionId)
+    : requestLogEntries
+  return filtered.slice(0, limit)
 }
 
 module.exports = {

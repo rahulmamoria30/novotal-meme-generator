@@ -86,7 +86,7 @@ app.use(
 app.use(express.json({ limit: "50mb" }))
 app.use(express.urlencoded({ extended: true, limit: "50mb" }))
 
-// Request audit log — records every API call into SQLite after the response is sent.
+// Request audit log — records every API call in memory after the response is sent.
 // Skips static uploads and Socket.io handshakes to keep the log signal-heavy.
 app.use((req, res, next) => {
   const start = process.hrtime.bigint()
